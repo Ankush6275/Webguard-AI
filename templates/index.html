@@ -1,0 +1,3124 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>WebGuard AI - Professional Dashboard</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+
+<style>
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; font-family: 'Inter', sans-serif; padding: 20px; }
+
+.container { max-width: 1400px; margin: 0 auto; }
+
+.main-container { background: white; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.15); padding: 3rem; margin: 20px auto; animation: fadeInUp 0.6s ease-out; }
+
+@keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+
+.header-title { font-size: 3rem; font-weight: 800; color: #2d3748; text-align: center; margin-bottom: 0.5rem; }
+
+.header-title i { color: #667eea; margin-right: 15px; animation: pulse 2s infinite; }
+
+@keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+
+.lead { color: #718096; font-size: 1.1rem; text-align: center; margin-bottom: 2rem; }
+
+.theme-toggle-btn { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; border-radius: 50%; width: 50px; height: 50px; color: white; font-size: 1.2rem; cursor: pointer; transition: all 0.3s; }
+
+.theme-toggle-btn:hover { transform: scale(1.1) rotate(15deg); }
+
+/* Dark Mode */
+
+body.dark-mode { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); }
+
+body.dark-mode .main-container { background: #1f1f1f; }
+
+body.dark-mode .header-title, body.dark-mode .lead, body.dark-mode h1, body.dark-mode h2, body.dark-mode h3, body.dark-mode h4, body.dark-mode h5, body.dark-mode h6, body.dark-mode p, body.dark-mode strong, body.dark-mode small, body.dark-mode .text-muted, body.dark-mode td, body.dark-mode th, body.dark-mode li, body.dark-mode span { color: #e2e8f0; }
+
+/* FIX: Light mode heading visibility */
+
+body:not(.dark-mode) h1, body:not(.dark-mode) h2, body:not(.dark-mode) h3, body:not(.dark-mode) h4, body:not(.dark-mode) h5, body:not(.dark-mode) h6 { color: #1e293b !important; }
+
+body:not(.dark-mode) .card-body h5, body:not(.dark-mode) .card-body h6 { color: #1e293b !important; }
+
+body:not(.dark-mode) .card-body strong { color: #334155 !important; }
+
+body:not(.dark-mode) .card-body .text-muted { color: #64748b !important; }
+
+body.dark-mode .card { background: #2d3748; border-color: #4a5568; }
+
+body.dark-mode .card-body { background: #2d3748; }
+
+body.dark-mode .form-control { background: #1a202c; border-color: #4a5568; color: #ffffff; }
+
+body.dark-mode .form-control:focus { background: #1a202c; border-color: #667eea; }
+
+body.dark-mode .alert-info { background: #1e40af; border-color: #1e3a8a; color: #e0e7ff; }
+
+body.dark-mode .border-end { border-color: #4a5568 !important; }
+
+/* Fix Trust Navigator heading visibility in light mode */
+
+body:not(.dark-mode) .text-white { color: white !important; }
+
+/* Certificate Data Styling */
+
+.cert-data-row {
+padding: 0.75rem;
+background: #f8fafc;
+border-radius: 6px;
+margin-bottom: 0.5rem;
+border-left: 3px solid #667eea;
+}
+
+body.dark-mode .cert-data-row {
+background: #1a202c;
+border-left-color: #764ba2;
+}
+
+.cert-label {
+font-weight: 600;
+color: #334155;
+display: block;
+font-size: 0.9rem;
+margin-bottom: 0.25rem;
+}
+
+body.dark-mode .cert-label {
+color: #94a3b8;
+}
+
+.cert-value {
+color: #1e293b;
+font-size: 1rem;
+font-weight: 500;
+}
+
+body.dark-mode .cert-value {
+color: #e2e8f0;
+}
+
+/* Dynamic SSL Card Colors */
+
+.ssl-card-secure {
+background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%) !important;
+}
+
+.ssl-card-warning {
+background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
+}
+
+.ssl-card-danger {
+background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+}
+
+.stat-card { padding: 1.5rem; border-radius: 8px; background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%); transition: transform 0.3s; }
+
+.stat-card:hover { transform: translateY(-5px); }
+
+body.dark-mode .stat-card { background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%); }
+
+.stat-card h3 { color: #2d3748; font-weight: 700; font-size: 2.5rem; }
+
+body.dark-mode .stat-card h3 { color: #e2e8f0; }
+
+.card { background: #f7fafc; border: 1px solid #e2e8f0; border-radius: 12px; margin-bottom: 2rem; transition: all 0.3s; }
+
+.card:hover { transform: translateY(-5px); box-shadow: 0 15px 35px rgba(102, 126, 234, 0.2); }
+
+.card-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 1.5rem; border-radius: 12px 12px 0 0; font-weight: 600; }
+
+.card-body { background: white; padding: 2rem; border-radius: 0 0 12px 12px; }
+
+body.dark-mode .card-body { background: #2d3748; }
+
+/* FIX: Trust Navigator header gradient in BOTH modes */
+
+.trust-navigator-header {
+background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+border: none !important;
+}
+
+.trust-navigator-header .card-body {
+background: transparent !important;
+}
+
+.trust-navigator-header h3 {
+color: white !important;
+}
+
+body:not(.dark-mode) .trust-navigator-header {
+background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+}
+
+body.dark-mode .trust-navigator-header {
+background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+}
+
+.form-control { background: white; border: 2px solid #e2e8f0; border-radius: 8px; padding: 15px 20px; transition: all 0.3s; }
+
+.form-control:focus { border-color: #667eea; box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1); }
+
+.dashboard-card { cursor: pointer; border: 2px solid transparent; height: 100%; }
+
+.dashboard-card:hover { border-color: #667eea; transform: translateY(-10px) scale(1.02); box-shadow: 0 20px 40px rgba(102, 126, 234, 0.3); }
+
+.dashboard-card .card-body { text-align: center; padding: 3rem 2rem; }
+
+.dashboard-card i { font-size: 4rem; margin-bottom: 1.5rem; transition: transform 0.3s; }
+
+.dashboard-card:hover i { transform: scale(1.2) rotate(10deg); }
+
+.section-container { display: none; }
+
+.section-container.active { display: block; animation: fadeInUp 0.5s ease-out; }
+
+.back-button { background: #ef4444; border: none; border-radius: 50px; padding: 12px 25px; color: white; font-weight: 600; cursor: pointer; transition: all 0.3s; margin-bottom: 1rem; }
+
+.back-button:hover { background: #dc2626; transform: scale(1.05); }
+
+.history-item { padding: 1rem; border-left: 4px solid #667eea; background: #f7fafc; margin-bottom: 0.5rem; border-radius: 4px; cursor: pointer; transition: all 0.3s; }
+
+.history-item:hover { background: #edf2f7; transform: translateX(5px); }
+
+body.dark-mode .history-item { background: #2d3748; }
+
+.history-item.safe { border-left-color: #22c55e; }
+
+.history-item.suspicious { border-left-color: #f59e0b; }
+
+.history-item.danger { border-left-color: #ef4444; }
+
+.delete-history-btn { background: #ef4444; border: none; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.8rem; cursor: pointer; margin-left: 10px; }
+
+.delete-history-btn:hover { background: #dc2626; transform: scale(1.05); }
+
+.spinner-border { width: 3rem; height: 3rem; border-width: 4px; border-color: #667eea; border-right-color: transparent; }
+
+.progress-steps { display: flex; justify-content: space-between; margin-bottom: 2rem; }
+
+.step { flex: 1; text-align: center; opacity: 0.3; transition: all 0.5s; }
+
+.step.active { opacity: 1; transform: scale(1.1); }
+
+.step.completed { opacity: 1; }
+
+.step-icon { width: 60px; height: 60px; border-radius: 50%; background: #e2e8f0; display: flex; align-items: center; justify-content: center; margin: 0 auto 0.5rem; font-size: 1.5rem; color: #667eea; }
+
+.step.active .step-icon { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+
+.step.completed .step-icon { background: #22c55e; color: white; }
+
+#qrReader { border: 2px dashed #667eea; border-radius: 8px; padding: 1rem; margin-top: 1rem; }
+
+#stopQRScan { animation: pulse-red 1.5s infinite; }
+
+@keyframes pulse-red { 0%, 100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7); } 50% { box-shadow: 0 0 0 10px rgba(220, 38, 38, 0); } }
+
+.btn-group .btn { margin: 0 5px; }
+
+.table-responsive { border: 1px solid #e2e8f0; border-radius: 8px; }
+
+.table thead.sticky-top { position: sticky; top: 0; z-index: 10; }
+
+body.dark-mode .table { color: #e2e8f0; }
+
+body.dark-mode .table-striped > tbody > tr:nth-of-type(odd) > * { background-color: #374151; }
+
+body.dark-mode .table-hover > tbody > tr:hover > * { background-color: #4b5563; }
+
+body.dark-mode .table-dark { background-color: #1f2937; border-color: #374151; }
+
+.url-cell { word-break: break-all; font-size: 0.9rem; }
+
+.shadow-lg { box-shadow: 0 10px 25px rgba(0,0,0,0.15) !important; }
+
+.hidden { display: none !important; }
+
+/* NEW EMAIL SCANNER STYLES */
+.email-analysis-box { background: #f8fafc; border-left: 4px solid #667eea; padding: 1rem; border-radius: 6px; margin-bottom: 0.75rem; }
+body.dark-mode .email-analysis-box { background: #1a202c; }
+.threat-indicator { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.85rem; font-weight: 600; }
+.threat-high { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+.threat-medium { background: #fff7ed; color: #ea580c; border: 1px solid #fed7aa; }
+.threat-low { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
+
+@media (max-width: 768px) { .main-container { padding: 2rem 1rem; } .header-title { font-size: 2rem; } }
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="main-container">
+
+<div class="text-center mb-4">
+
+<div class="d-flex justify-content-end mb-3">
+
+<button id="themeToggle" class="theme-toggle-btn"><i class="fas fa-moon"></i></button>
+
+</div>
+
+<h1 class="display-4 header-title"><i class="fas fa-shield-alt"></i>WEBGUARD AI</h1>
+
+<p class="lead">AI-Powered Security Dashboard | Protect Against Cyber Threats</p>
+
+</div>
+
+<div class="row mb-4">
+
+<div class="col-md-3 col-6 mb-3"><div class="stat-card"><i class="fas fa-search fa-2x text-primary mb-2"></i><h3 id="totalScans">0</h3><p class="text-muted mb-0">Total Scans</p></div></div>
+
+<div class="col-md-3 col-6 mb-3"><div class="stat-card"><i class="fas fa-shield-alt fa-2x text-success mb-2"></i><h3 id="safeScans">0</h3><p class="text-muted mb-0">Safe URLs</p></div></div>
+
+<div class="col-md-3 col-6 mb-3"><div class="stat-card"><i class="fas fa-exclamation-triangle fa-2x text-danger mb-2"></i><h3 id="threatsDetected">0</h3><p class="text-muted mb-0">Threats</p></div></div>
+
+<div class="col-md-3 col-6 mb-3"><div class="stat-card"><i class="fas fa-percentage fa-2x text-info mb-2"></i><h3 id="successRate">0%</h3><p class="text-muted mb-0">Safety Rate</p></div></div>
+
+</div>
+
+<!-- DASHBOARD - MAIN VIEW -->
+
+<div id="dashboardView" class="section-container active">
+
+<div class="text-center mb-5">
+
+<h2 class="display-5 fw-bold mb-2">Security Dashboard</h2>
+
+<p class="text-muted">Click any card to access security tools</p>
+
+</div>
+
+<div class="row g-4">
+
+<div class="col-md-4">
+
+<div class="card dashboard-card" onclick="showSection('scanSection')">
+
+<div class="card-body">
+
+<i class="fas fa-search text-primary"></i>
+
+<h4>URL Scanner</h4>
+
+<p class="text-muted mb-0">Check any website for security threats</p>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="col-md-4">
+
+<div class="card dashboard-card" onclick="showSection('qrSection')">
+
+<div class="card-body">
+
+<i class="fas fa-qrcode text-warning"></i>
+
+<h4>QR Scanner</h4>
+
+<p class="text-muted mb-0">Scan QR codes for hidden threats</p>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="col-md-4">
+
+<div class="card dashboard-card" onclick="showSection('emailSection')">
+
+<div class="card-body">
+
+<i class="fas fa-envelope text-danger"></i>
+
+<h4>Email Scanner</h4>
+
+<p class="text-muted mb-0">Detect phishing emails and threats</p>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="col-md-4">
+
+<div class="card dashboard-card" onclick="showSection('bulkSection')">
+
+<div class="card-body">
+
+<i class="fas fa-list text-info"></i>
+
+<h4>Bulk Scanner</h4>
+
+<p class="text-muted mb-0">Analyze multiple URLs at once</p>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="col-md-4">
+
+<div class="card dashboard-card" onclick="showSection('historySection')">
+
+<div class="card-body">
+
+<i class="fas fa-history text-secondary"></i>
+
+<h4>Scan History</h4>
+
+<p class="text-muted mb-0">View all your previous scans</p>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="col-md-4">
+
+<div class="card dashboard-card" onclick="showSection('aboutSection')">
+
+<div class="card-body">
+
+<i class="fas fa-info-circle" style="background: linear-gradient(135deg, #667eea, #764ba2); background-clip: text; -webkit-text-fill-color: transparent;"></i>
+
+<h4>About</h4>
+
+<p class="text-muted mb-0">Learn more about WebGuard AI</p>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- URL SCANNER SECTION (keeping your existing code exactly as is) -->
+
+<div id="scanSection" class="section-container">
+
+<button class="back-button" onclick="resetSection('scanSection')"><i class="fas fa-redo me-2"></i>New Scan</button>
+
+<button class="back-button" style="background: #667eea; margin-left: 10px;" onclick="showSection('dashboardView')"><i class="fas fa-home me-2"></i>Dashboard</button>
+
+<div class="card">
+
+<div class="card-header bg-primary text-white"><h4 class="mb-0"><i class="fas fa-search"></i> URL Security Scanner</h4></div>
+
+<div class="card-body">
+
+<form id="scanForm">
+
+<div class="row">
+
+<div class="col-md-9 mb-3 mb-md-0">
+
+<input type="text" class="form-control form-control-lg" id="urlInput" placeholder="Enter URL (e.g., example.com)" required>
+
+</div>
+
+<div class="col-md-3">
+
+<button type="submit" class="btn btn-primary btn-lg w-100" id="scanBtn"><i class="fas fa-search"></i> <span id="btnText">Scan Now</span></button>
+
+</div>
+
+</div>
+
+</form>
+
+</div>
+
+</div>
+
+<div id="loadingSection" class="text-center my-5 hidden">
+
+<div class="spinner-border mb-3"></div>
+
+<h4><i class="fas fa-search"></i> Analyzing Website Security...</h4>
+
+<div id="progressSection" class="mt-4">
+
+<div class="progress-steps">
+
+<div class="step" id="step1"><div class="step-icon"><i class="fas fa-link"></i></div><div class="step-text">Validating</div></div>
+
+<div class="step" id="step2"><div class="step-icon"><i class="fas fa-lock"></i></div><div class="step-text">SSL</div></div>
+
+<div class="step" id="step3"><div class="step-icon"><i class="fas fa-virus"></i></div><div class="step-text">Threats</div></div>
+
+<div class="step" id="step4"><div class="step-icon"><i class="fas fa-globe"></i></div><div class="step-text">Domain</div></div>
+
+<div class="step" id="step5"><div class="step-icon"><i class="fas fa-file-alt"></i></div><div class="step-text">Report</div></div>
+
+</div>
+
+<div class="progress"><div id="scanProgress" class="progress-bar progress-bar-striped progress-bar-animated" style="width: 0%">0%</div></div>
+
+</div>
+
+</div>
+
+<!-- TRUST NAVIGATOR STYLE RESULTS -->
+
+<div id="resultsSection" class="hidden">
+
+<!-- Trust Navigator Header - FIXED FOR BOTH MODES -->
+
+<div class="card shadow-lg mb-4 trust-navigator-header">
+
+<div class="card-body p-4">
+
+<h3 class="text-white mb-0"><i class="fas fa-compass"></i> Trust Navigator</h3>
+
+</div>
+
+</div>
+
+<!-- AI Analysis & Domain Intelligence Row -->
+
+<div class="row mb-4">
+
+<!-- AI Analysis Card -->
+
+<div class="col-md-6">
+
+<div class="card shadow-lg h-100" style="border: 1px solid #e2e8f0;">
+
+<div class="card-body p-4">
+
+<h5 class="mb-4"><i class="fas fa-robot text-primary"></i> AI Analysis</h5>
+
+<div class="mb-3">
+
+<strong>Threat Level:</strong>
+
+<span id="threatLevel" class="badge bg-success ms-2" style="font-size: 1rem; padding: 0.5rem 1rem;">
+
+<i class="fas fa-check-circle"></i> SAFE
+
+</span>
+
+</div>
+
+<div class="mb-3">
+
+<strong>ML Confidence:</strong> <span id="mlConfidenceNav" class="text-muted ms-2">100.0%</span>
+
+</div>
+
+<div class="mb-0">
+
+<strong>VirusTotal:</strong>
+
+<span id="vtDetectionsNav" class="text-success ms-2">
+
+<i class="fas fa-check-circle"></i> <span id="vtCount">0/98</span> detections
+
+</span>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- Domain Intelligence Card -->
+
+<div class="col-md-6">
+
+<div class="card shadow-lg h-100" style="border: 1px solid #e2e8f0;">
+
+<div class="card-body p-4">
+
+<h5 class="mb-4"><i class="fas fa-globe text-info"></i> Domain Intelligence</h5>
+
+<div class="mb-3">
+
+<strong>Domain Age:</strong>
+
+<span id="domainAgeNav" class="badge bg-success ms-2" style="font-size: 1rem; padding: 0.5rem 1rem;">
+
+<i class="fas fa-check-circle"></i> <span id="domainYears">0</span> years
+
+</span>
+
+</div>
+
+<div class="mb-3">
+
+<span id="domainStatusText" class="text-muted">Established Domain</span>
+
+</div>
+
+<div class="mb-0">
+
+<strong>Registered:</strong> <span id="registeredDate" class="text-muted ms-2">-</span>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- SSL Certificate Status Card - DYNAMIC COLOR -->
+
+<div class="card shadow-lg mb-4" style="border: none;">
+
+<div class="card-header text-white ssl-card-secure" id="sslCardHeader">
+
+<h4 class="mb-0"><i class="fas fa-lock"></i> SSL Certificate Status</h4>
+
+</div>
+
+<div class="card-body p-4">
+
+<div class="row">
+
+<!-- Certificate Status Column -->
+
+<div class="col-md-6 mb-4 mb-md-0">
+
+<h5 class="mb-3"><i class="fas fa-certificate text-primary"></i> Certificate Status</h5>
+
+<div class="mb-3">
+
+<span id="sslStatusBadge" class="badge bg-success" style="font-size: 1.2rem; padding: 0.75rem 1.5rem;">
+
+<i class="fas fa-check-circle"></i> VALID
+
+</span>
+
+</div>
+
+<div class="cert-data-row">
+
+<span class="cert-label"><i class="fas fa-comment-alt text-primary"></i> Message</span>
+
+<span class="cert-value" id="sslMessageNav">Valid SSL certificate</span>
+
+</div>
+
+<div class="cert-data-row">
+
+<span class="cert-label"><i class="fas fa-building text-info"></i> Issuer</span>
+
+<span class="cert-value" id="sslIssuerNav">-</span>
+
+</div>
+
+<div class="cert-data-row">
+
+<span class="cert-label"><i class="fas fa-globe text-success"></i> Common Name</span>
+
+<span class="cert-value" id="commonName">-</span>
+
+</div>
+
+</div>
+
+<!-- Certificate Validity Column -->
+
+<div class="col-md-6">
+
+<h5 class="mb-3"><i class="fas fa-calendar-check text-success"></i> Certificate Validity</h5>
+
+<div class="cert-data-row">
+
+<span class="cert-label"><i class="fas fa-calendar-plus text-success"></i> Issue Date</span>
+
+<span class="cert-value" id="issueDate">-</span>
+
+</div>
+
+<div class="cert-data-row">
+
+<span class="cert-label"><i class="fas fa-calendar-times text-warning"></i> Expiry Date</span>
+
+<span class="cert-value" id="expiryDate">-</span>
+
+</div>
+
+<div class="cert-data-row">
+
+<span class="cert-label"><i class="fas fa-hourglass-half text-info"></i> Days Until Expiry</span>
+
+<span class="cert-value" id="daysUntilExpiry" style="font-size: 1.1rem; font-weight: 700;">-</span>
+
+</div>
+
+<div class="alert alert-info mt-3 mb-0" style="border-left: 4px solid #3b82f6;">
+
+<small id="validityMessage"><i class="fas fa-info-circle"></i> Certificate validity information</small>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- Security Protocol Card -->
+
+<div class="card shadow-lg mb-4" style="border: none;">
+
+<div class="card-header text-white" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+
+<h4 class="mb-0"><i class="fas fa-lightbulb"></i> Security Protocol</h4>
+
+</div>
+
+<div class="card-body p-4">
+
+<div class="mb-3 p-3" style="background: #f0fdf4; border-left: 4px solid #22c55e; border-radius: 4px;">
+
+<strong><i class="fas fa-check-circle text-success"></i> SECURE STATUS:</strong>
+
+<span class="text-muted">SSL/TLS encryption active, no malware detected in threat databases.</span>
+
+</div>
+
+<div class="mb-3 p-3" style="background: #fff7ed; border-left: 4px solid #f59e0b; border-radius: 4px;">
+
+<strong><i class="fas fa-shield-alt text-warning"></i> ENCRYPTION:</strong>
+
+<span class="text-muted">Always verify HTTPS before entering passwords or financial data.</span>
+
+</div>
+
+<div class="mb-3 p-3" style="background: #eff6ff; border-left: 4px solid #3b82f6; border-radius: 4px;">
+
+<strong><i class="fas fa-user-check text-primary"></i> VERIFICATION:</strong>
+
+<span class="text-muted">Check for official contact info, privacy policy, and business registration.</span>
+
+</div>
+
+<div class="mb-3 p-3" style="background: #f0f9ff; border-left: 4px solid #0ea5e9; border-radius: 4px;">
+
+<strong><i class="fas fa-info-circle text-info"></i> BEST PRACTICE:</strong>
+
+<span class="text-muted">Use strong unique passwords and enable two-factor authentication.</span>
+
+</div>
+
+<div class="mb-0 p-3" style="background: #fef2f2; border-left: 4px solid #ef4444; border-radius: 4px;">
+
+<strong><i class="fas fa-hourglass-half text-danger"></i> ESTABLISHED:</strong>
+
+<span class="text-muted" id="establishedMessage">Domain registered over a year - positive indicator.</span>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- Security Awareness Box -->
+
+<div class="alert alert-primary shadow-lg mb-4" style="border-left: 5px solid #667eea;">
+
+<h5><i class="fas fa-info-circle"></i> Security Awareness:</h5>
+
+<p class="mb-0" id="securityAwareness">Website appears secure with valid encryption. Always verify authenticity through official channels before sharing sensitive information.</p>
+
+</div>
+
+<!-- Download PDF Report Button -->
+
+<div class="text-center mt-4">
+
+<button id="downloadReportBtn" class="btn btn-lg shadow-lg text-white" style="background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); padding: 1rem 3rem; border-radius: 50px;">
+
+<i class="fas fa-download"></i> Download PDF Report
+
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- NEW EMAIL SCANNER SECTION -->
+<div id="emailSection" class="section-container">
+<button class="back-button" onclick="resetSection('emailSection')"><i class="fas fa-redo me-2"></i>New Scan</button>
+<button class="back-button" style="background: #667eea; margin-left: 10px;" onclick="showSection('dashboardView')"><i class="fas fa-home me-2"></i>Dashboard</button>
+
+<div class="card">
+<div class="card-header text-white" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);">
+<h4 class="mb-0"><i class="fas fa-envelope"></i> Advanced Email Security Scanner</h4>
+</div>
+<div class="card-body">
+<div class="alert alert-info">
+<i class="fas fa-info-circle"></i> <strong>Comprehensive Email Analysis:</strong> Detects phishing attempts, suspicious patterns, malicious links, sender authenticity, and email header anomalies.
+</div>
+
+<form id="emailScanForm">
+<div class="mb-3">
+<label class="form-label"><strong>Paste Email Content or Headers:</strong></label>
+<textarea class="form-control" id="emailContent" rows="8" placeholder="Paste complete email including headers, subject, sender, and body content...
+
+Example format:
+From: sender@example.com
+To: recipient@example.com
+Subject: Important Security Update
+Date: Sun, 23 Nov 2025 12:00:00 +0530
+
+Email body content here..." required></textarea>
+<small class="text-muted">Include sender, subject, body, and any links for comprehensive analysis</small>
+</div>
+
+<div class="row mb-3">
+<div class="col-md-6">
+<label class="form-label"><strong>Sender Email Address:</strong></label>
+<input type="email" class="form-control" id="senderEmail" placeholder="sender@example.com">
+</div>
+<div class="col-md-6">
+<label class="form-label"><strong>Subject Line:</strong></label>
+<input type="text" class="form-control" id="emailSubject" placeholder="Email subject">
+</div>
+</div>
+
+<button type="submit" class="btn btn-danger btn-lg w-100">
+<i class="fas fa-shield-alt"></i> Analyze Email for Threats
+</button>
+</form>
+</div>
+</div>
+
+<div id="emailLoadingSection" class="text-center my-5 hidden">
+<div class="spinner-border text-danger mb-3"></div>
+<h4><i class="fas fa-search"></i> Analyzing Email Security...</h4>
+<p class="text-muted">Checking for phishing indicators, malicious links, and suspicious patterns</p>
+</div>
+
+<div id="emailResultsSection" class="hidden">
+<!-- Email scan results will be dynamically inserted here -->
+</div>
+</div>
+
+<!-- QR SCANNER SECTION (Keeping your existing code) -->
+
+<div id="qrSection" class="section-container">
+
+<button class="back-button" onclick="resetSection('qrSection')"><i class="fas fa-redo me-2"></i>New Scan</button>
+
+<button class="back-button" style="background: #667eea; margin-left: 10px;" onclick="showSection('dashboardView')"><i class="fas fa-home me-2"></i>Dashboard</button>
+
+<!-- QR Scanner Input Card -->
+
+<div class="card">
+
+<div class="card-header bg-warning"><h4 class="mb-0"><i class="fas fa-qrcode"></i> QR Code Scanner - All Types Supported</h4></div>
+
+<div class="card-body">
+
+<div class="alert alert-info">
+
+<i class="fas fa-info-circle"></i> <strong>Supports ALL QR Types:</strong> URLs, Payment QR (UPI/PayTM/GPay), Contact Info, WiFi, Text, Verification Codes, and more!
+
+</div>
+
+<div class="row">
+
+<div class="col-md-6 mb-3">
+
+<h6><i class="fas fa-camera"></i> Scan with Camera</h6>
+
+<button id="startQRScan" class="btn btn-warning w-100 mb-3"><i class="fas fa-camera"></i> Start Camera Scan</button>
+
+<button id="stopQRScan" class="btn btn-danger w-100 mb-3 hidden"><i class="fas fa-times-circle"></i> Stop Camera</button>
+
+<div id="qrReader" class="hidden"></div>
+
+</div>
+
+<div class="col-md-6 mb-3">
+
+<h6><i class="fas fa-upload"></i> Upload QR Code Image</h6>
+
+<input type="file" id="qrFileInput" class="form-control mb-3" accept="image/*">
+
+<small class="text-muted">Upload payment QR, verification QR, or any QR code image</small>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- QR Results Display - FULL WIDTH -->
+
+<div id="qrResult" class="hidden mt-4"></div>
+
+</div>
+
+<!-- BULK SCANNER SECTION (Keeping your existing code) -->
+
+<div id="bulkSection" class="section-container">
+
+<button class="back-button" onclick="resetSection('bulkSection')"><i class="fas fa-redo me-2"></i>New Scan</button>
+
+<button class="back-button" style="background: #667eea; margin-left: 10px;" onclick="showSection('dashboardView')"><i class="fas fa-home me-2"></i>Dashboard</button>
+
+<div class="card">
+
+<div class="card-header bg-info text-white"><h4 class="mb-0"><i class="fas fa-list"></i> Bulk URL Scanner</h4></div>
+
+<div class="card-body">
+
+<div class="alert alert-info">
+
+<i class="fas fa-info-circle"></i> <strong>Supported Formats:</strong> TXT, CSV, XLSX, JSON, XML, DOC, or any text-based file (max 50)
+
+</div>
+
+<div class="row">
+
+<div class="col-md-8">
+
+<label class="form-label">Upload URL List File</label>
+
+<input type="file" id="bulkFileInput" class="form-control">
+
+<small class="text-muted">Any file type accepted - URLs extracted automatically</small>
+
+</div>
+
+<div class="col-md-4">
+
+<label class="form-label">&nbsp;</label>
+
+<button id="startBulkScan" class="btn btn-info w-100 text-white" disabled><i class="fas fa-tasks"></i> Start Bulk Scan</button>
+
+</div>
+
+</div>
+
+<div id="bulkProgress" class="mt-4 hidden">
+
+<div class="progress mb-3" style="height: 30px;">
+
+<div id="bulkProgressBar" class="progress-bar progress-bar-striped progress-bar-animated" style="width: 0%; font-size: 1rem; font-weight: 600;">0%</div>
+
+</div>
+
+<p id="bulkStatus" class="text-center text-muted"></p>
+
+</div>
+
+<div id="bulkResultsDisplay" class="mt-4 hidden">
+
+<hr class="my-4">
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+
+<h5><i class="fas fa-chart-bar"></i> Scan Results Summary</h5>
+
+<div>
+
+<span class="badge bg-success me-2" id="bulkSafeCount">Safe: 0</span>
+
+<span class="badge bg-warning me-2" id="bulkSuspiciousCount">Suspicious: 0</span>
+
+<span class="badge bg-danger" id="bulkErrorCount">Errors: 0</span>
+
+</div>
+
+</div>
+
+<div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
+
+<table class="table table-striped table-hover">
+
+<thead class="table-dark sticky-top">
+
+<tr>
+
+<th style="width: 5%;">#</th>
+
+<th style="width: 35%;">URL</th>
+
+<th style="width: 15%;">Status</th>
+
+<th style="width: 15%;">SSL</th>
+
+<th style="width: 15%;">Threats</th>
+
+<th style="width: 15%;">Confidence</th>
+
+</tr>
+
+</thead>
+
+<tbody id="bulkResultsTable"></tbody>
+
+</table>
+
+</div>
+
+<div class="alert alert-success mt-4">
+
+<h5><i class="fas fa-download"></i> Download Reports</h5>
+
+<p class="mb-3">Choose your preferred format:</p>
+
+<div class="btn-group" role="group">
+
+<button id="downloadPDF" class="btn btn-danger"><i class="fas fa-file-pdf"></i> PDF Report</button>
+
+<button id="downloadTXT" class="btn btn-secondary"><i class="fas fa-file-alt"></i> TXT Report</button>
+
+<button id="downloadCSV" class="btn btn-success"><i class="fas fa-file-csv"></i> CSV Report</button>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- HISTORY SECTION (Keeping your existing code) -->
+
+<div id="historySection" class="section-container">
+
+<button class="back-button" style="background: #667eea;" onclick="showSection('dashboardView')"><i class="fas fa-home me-2"></i>Dashboard</button>
+
+<div class="card">
+
+<div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+
+<h4 class="mb-0"><i class="fas fa-history"></i> Scan History</h4>
+
+<button id="clearAllHistory" class="btn btn-sm btn-danger"><i class="fas fa-trash-alt"></i> Clear All</button>
+
+</div>
+
+<div class="card-body">
+
+<div id="scanHistory"><p class="text-muted">No scan history yet. Start scanning URLs!</p></div>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- ABOUT SECTION (Keeping your existing code exactly as is) -->
+
+<div id="aboutSection" class="section-container">
+
+<button class="back-button" style="background: #667eea;" onclick="showSection('dashboardView')">
+
+<i class="fas fa-home me-2"></i>Dashboard
+
+</button>
+
+<!-- Hero Card -->
+
+<div class="card mb-4 border-0 shadow-lg" style="overflow: hidden;">
+
+<div class="card-body p-0">
+
+<div class="row g-0">
+
+<div class="col-md-5" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 3rem;">
+
+<div class="text-center text-white">
+
+<i class="fas fa-shield-alt fa-5x mb-4" style="opacity: 0.9;"></i>
+
+<h2 class="mb-3">WebGuard AI</h2>
+
+<p class="lead mb-4">Next-Generation URL Security Platform</p>
+
+<div class="d-flex justify-content-center gap-3">
+
+<span class="badge bg-white text-primary px-3 py-2">AI-Powered</span>
+
+<span class="badge bg-white text-primary px-3 py-2">Real-Time</span>
+
+<span class="badge bg-white text-primary px-3 py-2">Secure</span>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="col-md-7 p-4">
+
+<h4 class="mb-3"><i class="fas fa-info-circle text-primary"></i> Project Overview</h4>
+
+<p class="text-muted mb-3" style="line-height: 1.8;">
+
+WebGuard AI is an advanced cybersecurity application designed to protect users from malicious websites,
+
+phishing attacks, and online threats. Built with cutting-edge artificial intelligence and machine learning
+
+algorithms, it provides real-time threat detection and comprehensive security analysis.
+
+</p>
+
+<div class="row">
+
+<div class="col-6 mb-3">
+
+<div class="d-flex align-items-center">
+
+<div class="text-primary me-2" style="font-size: 2rem;"><i class="fas fa-check-circle"></i></div>
+
+<div>
+
+<strong>95%+</strong><br>
+
+<small class="text-muted">Accuracy Rate</small>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="col-6 mb-3">
+
+<div class="d-flex align-items-center">
+
+<div class="text-success me-2" style="font-size: 2rem;"><i class="fas fa-bolt"></i></div>
+
+<div>
+
+<strong>&lt;2s</strong><br>
+
+<small class="text-muted">Scan Time</small>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="col-6 mb-3">
+
+<div class="d-flex align-items-center">
+
+<div class="text-warning me-2" style="font-size: 2rem;"><i class="fas fa-shield-alt"></i></div>
+
+<div>
+
+<strong>5+</strong><br>
+
+<small class="text-muted">Security Checks</small>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="col-6 mb-3">
+
+<div class="d-flex align-items-center">
+
+<div class="text-info me-2" style="font-size: 2rem;"><i class="fas fa-qrcode"></i></div>
+
+<div>
+
+<strong>10+</strong><br>
+
+<small class="text-muted">QR Types</small>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="row">
+
+<!-- Features Section -->
+
+<div class="col-lg-8 mb-4">
+
+<div class="card shadow-sm mb-4">
+
+<div class="card-header bg-gradient text-white" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+
+<h5 class="mb-0"><i class="fas fa-star"></i> Core Features & Capabilities</h5>
+
+</div>
+
+<div class="card-body">
+
+<div class="row g-4">
+
+<div class="col-md-6">
+
+<div class="feature-card p-3 h-100" style="background: #f8f9fa; border-radius: 8px; border-left: 4px solid #667eea;">
+
+<div class="d-flex align-items-start">
+
+<div class="me-3">
+
+<div class="feature-icon" style="width: 50px; height: 50px; background: linear-gradient(135deg, #667eea, #764ba2); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+
+<i class="fas fa-robot fa-lg text-white"></i>
+
+</div>
+
+</div>
+
+<div>
+
+<h6 class="mb-2">AI-Powered Detection</h6>
+
+<p class="text-muted small mb-0">Advanced machine learning algorithms analyze URL patterns with 95%+ accuracy to detect phishing and malicious websites.</p>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="col-md-6">
+
+<div class="feature-card p-3 h-100" style="background: #f8f9fa; border-radius: 8px; border-left: 4px solid #22c55e;">
+
+<div class="d-flex align-items-start">
+
+<div class="me-3">
+
+<div class="feature-icon" style="width: 50px; height: 50px; background: linear-gradient(135deg, #22c55e, #16a34a); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+
+<i class="fas fa-lock fa-lg text-white"></i>
+
+</div>
+
+</div>
+
+<div>
+
+<h6 class="mb-2">SSL Certificate Validation</h6>
+
+<p class="text-muted small mb-0">Real-time verification of SSL/TLS certificates, expiry dates, and encryption strength to ensure secure connections.</p>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="col-md-6">
+
+<div class="feature-card p-3 h-100" style="background: #f8f9fa; border-radius: 8px; border-left: 4px solid #f59e0b;">
+
+<div class="d-flex align-items-start">
+
+<div class="me-3">
+
+<div class="feature-icon" style="width: 50px; height: 50px; background: linear-gradient(135deg, #f59e0b, #d97706); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+
+<i class="fas fa-qrcode fa-lg text-white"></i>
+
+</div>
+
+</div>
+
+<div>
+
+<h6 class="mb-2">Universal QR Scanner</h6>
+
+<p class="text-muted small mb-0">Scan and analyze QR codes - URLs, payment QR, WiFi, contacts, and more. Camera and file upload supported.</p>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="col-md-6">
+
+<div class="feature-card p-3 h-100" style="background: #f8f9fa; border-radius: 8px; border-left: 4px solid #ef4444;">
+
+<div class="d-flex align-items-start">
+
+<div class="me-3">
+
+<div class="feature-icon" style="width: 50px; height: 50px; background: linear-gradient(135deg, #ef4444, #dc2626); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+
+<i class="fas fa-envelope fa-lg text-white"></i>
+
+</div>
+
+</div>
+
+<div>
+
+<h6 class="mb-2">Email Phishing Scanner</h6>
+
+<p class="text-muted small mb-0">Advanced email analysis detecting phishing attempts, suspicious patterns, malicious links, and sender authenticity.</p>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="col-md-6">
+
+<div class="feature-card p-3 h-100" style="background: #f8f9fa; border-radius: 8px; border-left: 4px solid #3b82f6;">
+
+<div class="d-flex align-items-start">
+
+<div class="me-3">
+
+<div class="feature-icon" style="width: 50px; height: 50px; background: linear-gradient(135deg, #3b82f6, #2563eb); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+
+<i class="fas fa-tasks fa-lg text-white"></i>
+
+</div>
+
+</div>
+
+<div>
+
+<h6 class="mb-2">Bulk URL Analysis</h6>
+
+<p class="text-muted small mb-0">Scan up to 50 URLs simultaneously with progress tracking and downloadable reports in PDF, TXT, and CSV formats.</p>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="col-md-6">
+
+<div class="feature-card p-3 h-100" style="background: #f8f9fa; border-radius: 8px; border-left: 4px solid #8b5cf6;">
+
+<div class="d-flex align-items-start">
+
+<div class="me-3">
+
+<div class="feature-icon" style="width: 50px; height: 50px; background: linear-gradient(135deg, #8b5cf6, #7c3aed); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+
+<i class="fas fa-history fa-lg text-white"></i>
+
+</div>
+
+</div>
+
+<div>
+
+<h6 class="mb-2">Scan History & Analytics</h6>
+
+<p class="text-muted small mb-0">Track all scans with detailed history, statistics dashboard, and clickable entries for comprehensive analysis.</p>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- Technical Architecture -->
+
+<div class="card shadow-sm mb-4">
+
+<div class="card-header bg-dark text-white">
+
+<h5 class="mb-0"><i class="fas fa-layer-group"></i> Technical Architecture</h5>
+
+</div>
+
+<div class="card-body">
+
+<div class="row">
+
+<div class="col-md-6 mb-3">
+
+<h6 class="text-primary"><i class="fas fa-desktop"></i> Frontend Technologies</h6>
+
+<ul class="list-unstyled mb-0">
+
+<li class="mb-2"><i class="fab fa-html5 text-danger"></i> HTML5 - Semantic markup</li>
+
+<li class="mb-2"><i class="fab fa-css3-alt text-primary"></i> CSS3 - Modern styling & animations</li>
+
+<li class="mb-2"><i class="fab fa-js text-warning"></i> JavaScript ES6+ - Interactive features</li>
+
+<li class="mb-2"><i class="fab fa-bootstrap text-primary"></i> Bootstrap 5 - Responsive UI framework</li>
+
+</ul>
+
+</div>
+
+<div class="col-md-6 mb-3">
+
+<h6 class="text-success"><i class="fas fa-server"></i> Backend Technologies</h6>
+
+<ul class="list-unstyled mb-0">
+
+<li class="mb-2"><i class="fab fa-python text-primary"></i> Python 3.x - Core backend language</li>
+
+<li class="mb-2"><i class="fas fa-flask text-dark"></i> Flask - Web framework & REST API</li>
+
+<li class="mb-2"><i class="fas fa-brain text-danger"></i> Scikit-learn - ML model training</li>
+
+<li class="mb-2"><i class="fas fa-database text-info"></i> LocalStorage - Client-side storage</li>
+
+</ul>
+
+</div>
+
+</div>
+
+<hr>
+
+<h6 class="text-info"><i class="fas fa-plug"></i> External APIs & Libraries</h6>
+
+<div class="d-flex flex-wrap gap-2">
+
+<span class="badge bg-primary">VirusTotal API</span>
+
+<span class="badge bg-success">SSL Certificate Checker</span>
+
+<span class="badge bg-warning text-dark">html5-qrcode</span>
+
+<span class="badge bg-danger">jsPDF</span>
+
+<span class="badge bg-info">Chart.js</span>
+
+<span class="badge bg-secondary">WHOIS</span>
+
+<span class="badge bg-danger">Email Pattern Detection</span>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- Sidebar -->
+
+<div class="col-lg-4">
+
+<!-- Tech Stack -->
+
+<div class="card mb-4 shadow-sm">
+
+<div class="card-header" style="background: linear-gradient(135deg, #1f2937, #111827);">
+
+<h6 class="mb-0 text-white"><i class="fas fa-code"></i> Technology Stack</h6>
+
+</div>
+
+<div class="card-body">
+
+<div class="mb-3">
+
+<div class="d-flex justify-content-between mb-1">
+
+<small><strong>Python</strong></small>
+
+<small class="text-muted">Backend</small>
+
+</div>
+
+<div class="progress" style="height: 8px;">
+
+<div class="progress-bar bg-primary" style="width: 100%"></div>
+
+</div>
+
+</div>
+
+<div class="mb-3">
+
+<div class="d-flex justify-content-between mb-1">
+
+<small><strong>JavaScript</strong></small>
+
+<small class="text-muted">Frontend</small>
+
+</div>
+
+<div class="progress" style="height: 8px;">
+
+<div class="progress-bar bg-warning" style="width: 100%"></div>
+
+</div>
+
+</div>
+
+<div class="mb-3">
+
+<div class="d-flex justify-content-between mb-1">
+
+<small><strong>Flask</strong></small>
+
+<small class="text-muted">Framework</small>
+
+</div>
+
+<div class="progress" style="height: 8px;">
+
+<div class="progress-bar bg-success" style="width: 100%"></div>
+
+</div>
+
+</div>
+
+<div class="mb-3">
+
+<div class="d-flex justify-content-between mb-1">
+
+<small><strong>Bootstrap</strong></small>
+
+<small class="text-muted">UI Library</small>
+
+</div>
+
+<div class="progress" style="height: 8px;">
+
+<div class="progress-bar bg-info" style="width: 100%"></div>
+
+</div>
+
+</div>
+
+<div class="mb-0">
+
+<div class="d-flex justify-content-between mb-1">
+
+<small><strong>Scikit-learn</strong></small>
+
+<small class="text-muted">ML Engine</small>
+
+</div>
+
+<div class="progress" style="height: 8px;">
+
+<div class="progress-bar bg-danger" style="width: 100%"></div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- Project Info -->
+
+<div class="card mb-4 shadow-sm">
+
+<div class="card-header text-white" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+
+<h6 class="mb-0"><i class="fas fa-graduation-cap"></i> Project Information</h6>
+
+</div>
+
+<div class="card-body">
+
+<p class="mb-2"><strong>Institution:</strong><br><small class="text-muted">Mumbai University</small></p>
+
+<p class="mb-2"><strong>Course:</strong><br><small class="text-muted">BSc Computer Science</small></p>
+
+<p class="mb-2"><strong>Project Type:</strong><br><small class="text-muted">Final Year Project</small></p>
+
+<p class="mb-2"><strong>Category:</strong><br><small class="text-muted">Cybersecurity & Web Development</small></p>
+
+<p class="mb-0"><strong>Status:</strong><br><span class="badge bg-success">Production Ready</span></p>
+
+</div>
+
+</div>
+
+<!-- Developer Contact -->
+
+<div class="card shadow-sm">
+
+<div class="card-header text-white" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+
+<h6 class="mb-0"><i class="fas fa-user"></i> Developer Contact</h6>
+
+</div>
+
+<div class="card-body">
+
+<p class="mb-3"><strong>Created by:</strong><br>Ankush Sharma</p>
+
+<div class="d-grid gap-2">
+
+<a href="mailto:webguard@gmail.com" class="btn btn-outline-primary btn-sm">
+
+<i class="fas fa-envelope"></i> Email
+
+</a>
+
+<a href="https://github.com/Ankush6275" target="_blank" class="btn btn-outline-dark btn-sm">
+
+<i class="fab fa-github"></i> GitHub
+
+</a>
+
+<a href="https://linkedin.com/in/ankusharma2002" target="_blank" class="btn btn-outline-info btn-sm">
+
+<i class="fab fa-linkedin"></i> LinkedIn
+
+</a>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- Footer Stats -->
+
+<div class="card shadow-sm border-0 mt-4" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);">
+
+<div class="card-body">
+
+<div class="row text-center">
+
+<div class="col-md-3 mb-3 mb-md-0">
+
+<h3 class="text-primary mb-1"><i class="fas fa-code"></i></h3>
+
+<h4 class="mb-1">2,500+</h4>
+
+<small class="text-muted">Lines of Code</small>
+
+</div>
+
+<div class="col-md-3 mb-3 mb-md-0">
+
+<h3 class="text-success mb-1"><i class="fas fa-shield-alt"></i></h3>
+
+<h4 class="mb-1">6</h4>
+
+<small class="text-muted">Security Layers</small>
+
+</div>
+
+<div class="col-md-3 mb-3 mb-md-0">
+
+<h3 class="text-warning mb-1"><i class="fas fa-bolt"></i></h3>
+
+<h4 class="mb-1">&lt;2s</h4>
+
+<small class="text-muted">Response Time</small>
+
+</div>
+
+<div class="col-md-3">
+
+<h3 class="text-danger mb-1"><i class="fas fa-star"></i></h3>
+
+<h4 class="mb-1">95%+</h4>
+
+<small class="text-muted">Accuracy</small>
+
+</div>
+
+</div>
+
+<div class="footer-copyright-id text-center py-3" style="background:#94b3f8; color:#1a1a1b; border-radius: 0 0 12px 12px;">
+
+&copy; 2025 <strong>WebGuard AI</strong> All Rights Reserved.
+
+<span style="margin-left:1.5em">
+
+<i class="fas fa-id-badge text-primary me-1"></i>
+
+Project ID: <strong style="font-family:monospace; color:#d4e2e2;">WG-2025-BSC-CS-001</strong>
+
+</span>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+
+<script>
+let currentScanData = null;
+let html5QrCode;
+let bulkURLs = [];
+let bulkScanResults = [];
+let isQRScanning = false;
+
+// ============================================
+// SECTION NAVIGATION
+// ============================================
+function showSection(sectionId) {
+    document.querySelectorAll('.section-container').forEach(section => {
+        section.classList.remove('active');
+    });
+    document.getElementById(sectionId).classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function resetSection(sectionId) {
+    if (sectionId === 'scanSection') {
+        document.getElementById('urlInput').value = '';
+        document.getElementById('loadingSection').classList.add('hidden');
+        document.getElementById('resultsSection').classList.add('hidden');
+        document.getElementById('scanBtn').disabled = false;
+        document.getElementById('btnText').textContent = 'Scan Now';
+    } else if (sectionId === 'qrSection') {
+        if (html5QrCode && isQRScanning) {
+            html5QrCode.stop().catch(err => console.log(err));
+        }
+        document.getElementById('qrReader').classList.add('hidden');
+        document.getElementById('startQRScan').classList.remove('hidden');
+        document.getElementById('stopQRScan').classList.add('hidden');
+        document.getElementById('qrFileInput').value = '';
+        document.getElementById('qrResult').classList.add('hidden');
+        isQRScanning = false;
+    } else if (sectionId === 'bulkSection') {
+        document.getElementById('bulkFileInput').value = '';
+        document.getElementById('startBulkScan').disabled = true;
+        document.getElementById('bulkProgress').classList.add('hidden');
+        document.getElementById('bulkResultsDisplay').classList.add('hidden');
+        document.getElementById('bulkResultsTable').innerHTML = '';
+        bulkURLs = [];
+        bulkScanResults = [];
+    } else if (sectionId === 'emailSection') {
+        document.getElementById('emailContent').value = '';
+        document.getElementById('senderEmail').value = '';
+        document.getElementById('emailSubject').value = '';
+        document.getElementById('emailLoadingSection').classList.add('hidden');
+        document.getElementById('emailResultsSection').classList.add('hidden');
+    }
+}
+
+// ============================================
+// STATISTICS & HISTORY
+// ============================================
+function updateStatistics() {
+    const stats = JSON.parse(localStorage.getItem('webguardStats')) || { total: 0, safe: 0, threats: 0 };
+    document.getElementById('totalScans').textContent = stats.total;
+    document.getElementById('safeScans').textContent = stats.safe;
+    document.getElementById('threatsDetected').textContent = stats.threats;
+    const rate = stats.total > 0 ? ((stats.safe / stats.total) * 100).toFixed(1) : 0;
+    document.getElementById('successRate').textContent = rate + '%';
+}
+
+function incrementStats(isSafe) {
+    const stats = JSON.parse(localStorage.getItem('webguardStats')) || { total: 0, safe: 0, threats: 0 };
+    stats.total++;
+    if (isSafe) stats.safe++; else stats.threats++;
+    localStorage.setItem('webguardStats', JSON.stringify(stats));
+    updateStatistics();
+}
+
+function addToHistory(url, result, riskLevel, scanType = 'URL') {
+    const history = JSON.parse(localStorage.getItem('scanHistory')) || [];
+    const newScan = { 
+        url: url, 
+        result: result, 
+        riskLevel: riskLevel, 
+        scanType: scanType, 
+        timestamp: new Date().toLocaleString() 
+    };
+    history.unshift(newScan);
+    if (history.length > 50) history.pop();
+    localStorage.setItem('scanHistory', JSON.stringify(history));
+    displayHistory();
+}
+
+function displayHistory() {
+    const history = JSON.parse(localStorage.getItem('scanHistory')) || [];
+    const container = document.getElementById('scanHistory');
+    
+    if (history.length === 0) {
+        container.innerHTML = '<p class="text-muted">No scan history yet. Start scanning URLs!</p>';
+        return;
+    }
+    
+    let html = '';
+    history.forEach((scan, index) => {
+        const statusClass = scan.riskLevel.toLowerCase().includes('safe') || scan.riskLevel.toLowerCase().includes('trusted') ? 'safe' : 
+                           scan.riskLevel.toLowerCase().includes('suspicious') ? 'suspicious' : 'danger';
+        const scanIcon = scan.scanType === 'QR' ? '<i class="fas fa-qrcode"></i>' :
+                        scan.scanType === 'Bulk' ? '<i class="fas fa-list"></i>' : 
+                        scan.scanType === 'Email' ? '<i class="fas fa-envelope"></i>' : 
+                        '<i class="fas fa-search"></i>';
+        
+        html += `
+            <div class="history-item ${statusClass}">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div style="flex: 1;">
+                        <strong>${scanIcon} ${scan.url.length > 50 ? scan.url.substring(0, 50) + '...' : scan.url}</strong><br>
+                        <small class="text-muted">${scan.timestamp} - ${scan.scanType} Scan</small>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-${getStatusBadge(scan.riskLevel)}">${scan.result}</span>
+                        <button class="delete-history-btn" onclick="deleteHistoryItem(${index})">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    container.innerHTML = html;
+}
+
+function getStatusBadge(riskLevel) {
+    if (riskLevel.includes('SAFE') || riskLevel.includes('TRUSTED')) return 'success';
+    if (riskLevel.includes('SUSPICIOUS')) return 'warning';
+    return 'danger';
+}
+
+function deleteHistoryItem(index) {
+    if (confirm('Delete this scan from history?')) {
+        const history = JSON.parse(localStorage.getItem('scanHistory')) || [];
+        history.splice(index, 1);
+        localStorage.setItem('scanHistory', JSON.stringify(history));
+        displayHistory();
+    }
+}
+
+document.getElementById('clearAllHistory')?.addEventListener('click', function() {
+    if (confirm('Are you sure you want to clear all scan history?')) {
+        localStorage.removeItem('scanHistory');
+        displayHistory();
+        alert('History cleared successfully!');
+    }
+});
+
+// ============================================
+// TRUSTED DOMAIN WHITELIST
+// ============================================
+function checkTrustedDomain(url) {
+    const trustedDomains = [
+        'youtube.com', 'youtu.be', 'vimeo.com', 'dailymotion.com', 'twitch.tv',
+        'facebook.com', 'fb.com', 'instagram.com', 'twitter.com', 'x.com',
+        'linkedin.com', 'tiktok.com', 'snapchat.com', 'reddit.com', 'pinterest.com',
+        'whatsapp.com', 'telegram.org', 'discord.com', 'skype.com',
+        'google.com', 'microsoft.com', 'apple.com', 'amazon.com', 'netflix.com',
+        'adobe.com', 'zoom.us', 'dropbox.com', 'github.com', 'stackoverflow.com',
+        'gitlab.com', 'bitbucket.org', 'atlassian.com', 'slack.com',
+        'bbc.com', 'bbc.co.uk', 'cnn.com', 'nytimes.com', 'reuters.com', 
+        'theguardian.com', 'forbes.com', 'wsj.com', 'bloomberg.com',
+        'amazon.in', 'amazon.com', 'flipkart.com', 'myntra.com', 'snapdeal.com', 
+        'ebay.com', 'alibaba.com', 'walmart.com', 'target.com', 'bestbuy.com',
+        'paytm.com', 'phonepe.com', 'googlepay.com', 'paypal.com', 'stripe.com',
+        'razorpay.com', 'payumoney.in', 'instamojo.com',
+        'udemy.com', 'coursera.org', 'edx.org', 'khanacademy.org', 'lynda.com',
+        'skillshare.com', 'pluralsight.com', 'udacity.com',
+        'gov.in', 'nic.in', 'india.gov.in', 'uidai.gov.in', 'incometax.gov.in',
+        'cloudflare.com', 'aws.amazon.com', 'azure.microsoft.com', 'heroku.com',
+        'digitalocean.com', 'linode.com', 'godaddy.com', 'namecheap.com',
+        'edu', 'ac.in', 'ac.uk', 'edu.au', 'ac.za'
+    ];
+    
+    try {
+        const urlObj = new URL(url.startsWith('http') ? url : 'https://' + url);
+        const hostname = urlObj.hostname.toLowerCase().replace('www.', '');
+        
+        for (let domain of trustedDomains) {
+            if (hostname === domain || hostname.endsWith('.' + domain)) {
+                return {
+                    isTrusted: true,
+                    domain: hostname,
+                    category: getCategoryForDomain(hostname)
+                };
+            }
+        }
+        
+        return { isTrusted: false, domain: hostname, category: 'Unknown' };
+    } catch (e) {
+        return { isTrusted: false, domain: 'Invalid URL', category: 'Unknown' };
+    }
+}
+
+function getCategoryForDomain(hostname) {
+    if (hostname.includes('youtube') || hostname.includes('youtu.be') || hostname.includes('vimeo')) return 'Video Platform';
+    if (hostname.includes('facebook') || hostname.includes('twitter') || hostname.includes('instagram') || hostname.includes('tiktok')) return 'Social Media';
+    if (hostname.includes('google') || hostname.includes('microsoft') || hostname.includes('apple')) return 'Tech Giant';
+    if (hostname.includes('amazon') || hostname.includes('flipkart') || hostname.includes('ebay')) return 'E-commerce';
+    if (hostname.includes('gov.in') || hostname.includes('nic.in') || hostname.includes('india.gov')) return 'Government';
+    if (hostname.includes('edu') || hostname.includes('ac.')) return 'Education';
+    if (hostname.includes('paytm') || hostname.includes('phonepe') || hostname.includes('paypal')) return 'Payment Service';
+    if (hostname.includes('github') || hostname.includes('gitlab') || hostname.includes('stackoverflow')) return 'Developer Platform';
+    if (hostname.includes('bbc') || hostname.includes('cnn') || hostname.includes('nytimes')) return 'News Media';
+    return 'Trusted Website';
+}
+
+// ============================================
+// EMAIL SCANNER
+// ============================================
+document.getElementById('emailScanForm')?.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    await scanEmail();
+});
+
+async function scanEmail() {
+    const emailContent = document.getElementById('emailContent').value;
+    const senderEmail = document.getElementById('senderEmail').value;
+    const emailSubject = document.getElementById('emailSubject').value;
+
+    const loadingDiv = document.getElementById('emailLoadingSection');
+    const resultsDiv = document.getElementById('emailResultsSection');
+
+    loadingDiv.classList.remove('hidden');
+    resultsDiv.classList.add('hidden');
+
+    await new Promise(resolve => setTimeout(resolve, 2000));
+
+    const analysis = analyzeEmail(emailContent, senderEmail, emailSubject);
+
+    loadingDiv.classList.add('hidden');
+    resultsDiv.classList.remove('hidden');
+
+    displayEmailResults(analysis, emailContent, senderEmail, emailSubject);
+
+    const isSafe = analysis.threatLevel === 'LOW';
+    incrementStats(isSafe);
+    addToHistory(senderEmail || 'Email Analysis', analysis.riskLevel, analysis.riskLevel, 'Email');
+}
+
+function analyzeEmail(content, sender, subject) {
+    let threatScore = 0;
+    let indicators = [];
+    const urlPattern = /(https?:\/\/[^\s]+)/g;
+    const urls = content.match(urlPattern) || [];
+
+    const phishingKeywords = [
+        'urgent', 'verify', 'suspend', 'confirm', 'account', 'security', 'click here', 
+        'update', 'expire', 'limited time', 'act now', 'verify your account', 
+        'unusual activity', 'locked', 'unauthorized', 'reset password', 'confirm identity',
+        'prize', 'winner', 'congratulations', 'claim', 'refund', 'tax', 'payment failed',
+        'dear customer', 'dear user', 'valued customer'
+    ];
+
+    const contentLower = content.toLowerCase();
+    const subjectLower = (subject || '').toLowerCase();
+
+    phishingKeywords.forEach(keyword => {
+        if (contentLower.includes(keyword) || subjectLower.includes(keyword)) {
+            threatScore += 5;
+            if (!indicators.some(i => i.includes('Phishing keywords'))) {
+                indicators.push(`⚠️ Phishing keywords detected: "${keyword}"`);
+            }
+        }
+    });
+
+    if (urls.length > 5) {
+        threatScore += 15;
+        indicators.push(`🔗 High number of links detected (${urls.length} links)`);
+    } else if (urls.length > 0) {
+        indicators.push(`🔗 ${urls.length} link(s) found in email`);
+    }
+
+    const shortenedDomains = ['bit.ly', 'tinyurl', 'goo.gl', 't.co', 'ow.ly', 'is.gd'];
+    urls.forEach(url => {
+        if (shortenedDomains.some(domain => url.includes(domain))) {
+            threatScore += 10;
+            indicators.push('⚠️ Shortened URL detected (potential hiding of malicious link)');
+        }
+    });
+
+    if (sender) {
+        if (sender.includes('+') || sender.includes('_') || /\d{3,}/.test(sender)) {
+            threatScore += 8;
+            indicators.push('📧 Suspicious sender email pattern detected');
+        }
+
+        const freeEmailDomains = ['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com', 'protonmail.com'];
+        const senderDomain = sender.split('@')[1];
+        if (senderDomain && freeEmailDomains.includes(senderDomain.toLowerCase())) {
+            if (contentLower.includes('bank') || contentLower.includes('payment') || contentLower.includes('invoice')) {
+                threatScore += 10;
+                indicators.push('⚠️ Official-sounding email from free email service (red flag)');
+            }
+        }
+
+        const emailDomain = sender.split('@')[1];
+        urls.forEach(url => {
+            try {
+                const urlDomain = new URL(url).hostname;
+                if (emailDomain && !url.includes(emailDomain)) {
+                    threatScore += 7;
+                    indicators.push(`🔍 Email domain mismatch: sender domain differs from link domain`);
+                }
+            } catch (e) {}
+        });
+    }
+
+    const grammarIssues = ['dear customer', 'kindly', 'needful', 'please to', 'your account have'];
+    grammarIssues.forEach(issue => {
+        if (contentLower.includes(issue)) {
+            threatScore += 3;
+            if (!indicators.some(i => i.includes('Grammar issues'))) {
+                indicators.push('📝 Grammar/phrasing issues detected (common in phishing)');
+            }
+        }
+    });
+
+    const urgencyPhrases = ['urgent', 'immediate', 'act now', 'within 24 hours', 'expires today', 'last chance'];
+    urgencyPhrases.forEach(phrase => {
+        if (contentLower.includes(phrase) || subjectLower.includes(phrase)) {
+            threatScore += 6;
+            if (!indicators.some(i => i.includes('Urgency tactics'))) {
+                indicators.push('⏰ Urgency tactics detected (pressure to act quickly)');
+            }
+        }
+    });
+
+    if (subject) {
+        if (subject.toUpperCase() === subject && subject.length > 10) {
+            threatScore += 5;
+            indicators.push('📢 ALL CAPS subject line (aggressive tactic)');
+        }
+        if (subjectLower.includes('re:') || subjectLower.includes('fwd:')) {
+            if (!content.includes('>') && !content.includes('wrote:')) {
+                threatScore += 8;
+                indicators.push('⚠️ Fake reply/forward (no quoted text found)');
+            }
+        }
+    }
+
+    if (contentLower.includes('dear sir') || contentLower.includes('dear madam') || 
+        contentLower.includes('dear customer') || contentLower.includes('dear user')) {
+        threatScore += 5;
+        indicators.push('👤 Generic greeting instead of personalized name');
+    }
+
+    if (contentLower.includes('attachment') || contentLower.includes('attached file') || 
+        contentLower.includes('see attached') || contentLower.includes('open attachment')) {
+        threatScore += 7;
+        indicators.push('📎 Mentions attachments (verify before opening any files)');
+    }
+
+    let threatLevel, riskLevel, threatClass, recommendation;
+    if (threatScore >= 40) {
+        threatLevel = 'HIGH';
+        riskLevel = 'DANGEROUS';
+        threatClass = 'danger';
+        recommendation = '🚨 HIGH RISK: This email shows multiple phishing indicators. Do NOT click any links, download attachments, or reply. Delete immediately and report as phishing.';
+    } else if (threatScore >= 20) {
+        threatLevel = 'MEDIUM';
+        riskLevel = 'SUSPICIOUS';
+        threatClass = 'warning';
+        recommendation = '⚠️ SUSPICIOUS: This email contains concerning elements. Verify sender authenticity through official channels before taking any action. Do not click links or provide personal information.';
+    } else {
+        threatLevel = 'LOW';
+        riskLevel = 'SAFE';
+        threatClass = 'success';
+        recommendation = '✅ This email appears relatively safe based on initial analysis. However, always remain cautious with unsolicited emails and verify sender identity before sharing sensitive information.';
+    }
+
+    return {
+        threatScore,
+        threatLevel,
+        riskLevel,
+        threatClass,
+        indicators: indicators.length > 0 ? indicators : ['No major red flags detected'],
+        recommendation,
+        urlCount: urls.length,
+        urls: urls.slice(0, 10)
+    };
+}
+
+function displayEmailResults(analysis, content, sender, subject) {
+    const resultsDiv = document.getElementById('emailResultsSection');
+    
+    let html = `
+        <div class="card shadow-lg mb-4" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); border: none;">
+            <div class="card-body p-4">
+                <h3 class="text-white mb-0"><i class="fas fa-envelope-open-text"></i> Email Security Analysis Report</h3>
+            </div>
+        </div>
+
+        <div class="card shadow-lg mb-4">
+            <div class="card-header bg-${analysis.threatClass} text-white">
+                <h5 class="mb-0"><i class="fas fa-exclamation-triangle"></i> Threat Assessment</h5>
+            </div>
+            <div class="card-body p-4">
+                <div class="row">
+                    <div class="col-md-4 mb-3 mb-md-0">
+                        <div class="text-center p-3" style="background: ${analysis.threatClass === 'success' ? '#f0fdf4' : (analysis.threatClass === 'danger' ? '#fef2f2' : '#fff7ed')}; border-radius: 8px;">
+                            <h2 class="mb-2" style="color: ${analysis.threatClass === 'success' ? '#22c55e' : (analysis.threatClass === 'danger' ? '#ef4444' : '#f59e0b')};">${analysis.threatScore}</h2>
+                            <p class="mb-0"><strong>Threat Score</strong></p>
+                            <small class="text-muted">0-100 scale</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3 mb-md-0">
+                        <div class="text-center p-3" style="background: ${analysis.threatClass === 'success' ? '#f0fdf4' : (analysis.threatClass === 'danger' ? '#fef2f2' : '#fff7ed')}; border-radius: 8px;">
+                            <span class="threat-indicator threat-${analysis.threatLevel.toLowerCase()}" style="font-size: 1.2rem;">${analysis.threatLevel} RISK</span>
+                            <p class="mb-0 mt-2"><strong>Risk Level</strong></p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-center p-3" style="background: #f0f9ff; border-radius: 8px;">
+                            <h2 class="mb-2 text-primary">${analysis.urlCount}</h2>
+                            <p class="mb-0"><strong>Links Detected</strong></p>
+                            <small class="text-muted">Verify before clicking</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-lg mb-4">
+            <div class="card-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <h5 class="text-white mb-0"><i class="fas fa-info-circle"></i> Email Details</h5>
+            </div>
+            <div class="card-body p-4">
+                <div class="email-analysis-box">
+                    <strong><i class="fas fa-user text-primary"></i> Sender:</strong>
+                    <p class="mb-0 mt-1">${sender || 'Not provided'}</p>
+                </div>
+                <div class="email-analysis-box">
+                    <strong><i class="fas fa-heading text-info"></i> Subject:</strong>
+                    <p class="mb-0 mt-1">${subject || 'Not provided'}</p>
+                </div>
+                ${analysis.urls.length > 0 ? `
+                <div class="email-analysis-box">
+                    <strong><i class="fas fa-link text-warning"></i> Detected Links:</strong>
+                    <ul class="mt-2 mb-0">
+                        ${analysis.urls.slice(0, 5).map(url => `<li style="word-break: break-all; font-size: 0.9rem;">${url}</li>`).join('')}
+                        ${analysis.urls.length > 5 ? `<li class="text-muted">... and ${analysis.urls.length - 5} more</li>` : ''}
+                    </ul>
+                </div>
+                ` : ''}
+            </div>
+        </div>
+
+        <div class="card shadow-lg mb-4">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0"><i class="fas fa-list-ul"></i> Security Indicators Detected (${analysis.indicators.length})</h5>
+            </div>
+            <div class="card-body p-4">
+                <ul class="mb-0">
+                    ${analysis.indicators.map(indicator => `<li class="mb-2" style="line-height: 1.6;">${indicator}</li>`).join('')}
+                </ul>
+            </div>
+        </div>
+
+        <div class="alert alert-${analysis.threatClass} shadow-lg mb-4" style="border-left: 5px solid ${analysis.threatClass === 'success' ? '#22c55e' : (analysis.threatClass === 'danger' ? '#ef4444' : '#f59e0b')};">
+            <h5><i class="fas fa-shield-alt"></i> Security Recommendation</h5>
+            <p class="mb-0">${analysis.recommendation}</p>
+        </div>
+
+        <div class="card shadow-lg">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="fas fa-lightbulb"></i> Email Safety Best Practices</h5>
+            </div>
+            <div class="card-body p-4">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <div class="p-3" style="background: #f0fdf4; border-left: 4px solid #22c55e; border-radius: 6px;">
+                            <strong>✅ DO:</strong>
+                            <ul class="mb-0 mt-2">
+                                <li>Verify sender through official channels</li>
+                                <li>Hover over links to see actual destination</li>
+                                <li>Check for HTTPS in website URLs</li>
+                                <li>Use email filters and spam blockers</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="p-3" style="background: #fef2f2; border-left: 4px solid #ef4444; border-radius: 6px;">
+                            <strong>❌ DON'T:</strong>
+                            <ul class="mb-0 mt-2">
+                                <li>Click suspicious links or attachments</li>
+                                <li>Share passwords or personal info via email</li>
+                                <li>Trust urgent financial requests</li>
+                                <li>Reply to suspicious emails</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    resultsDiv.innerHTML = html;
+}
+
+// ============================================
+// URL SCANNER
+// ============================================
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('scanForm');
+    if (!form) return;
+
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        let url = document.getElementById('urlInput').value.trim();
+        if (!url) {
+            alert('Please enter a URL');
+            return;
+        }
+        
+        if (!url.startsWith('http') && !url.startsWith('https')) {
+            url = 'https://' + url;
+        }
+
+        const loadingSection = document.getElementById('loadingSection');
+        const resultsSection = document.getElementById('resultsSection');
+        const scanBtn = document.getElementById('scanBtn');
+        const btnText = document.getElementById('btnText');
+
+        loadingSection.classList.remove('hidden');
+        resultsSection.classList.add('hidden');
+        showProgress();
+        scanBtn.disabled = true;
+        btnText.textContent = 'Scanning...';
+
+        try {
+            const response = await fetch('/scan', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ url: url })
+            });
+
+            if (!response.ok) throw new Error(`HTTP error ${response.status}`);
+            
+            const data = await response.json();
+            currentScanData = data;
+            
+            console.log('═══════════════════════════════════════');
+            console.log('🔍 COMPLETE BACKEND RESPONSE');
+            console.log('═══════════════════════════════════════');
+            console.log(JSON.stringify(data, null, 2));
+            console.log('═══════════════════════════════════════');
+            
+            displayResults(data);
+            
+        } catch (error) {
+            loadingSection.classList.add('hidden');
+            scanBtn.disabled = false;
+            btnText.textContent = 'Scan Now';
+            alert('Scan failed: ' + error.message);
+        }
+    });
+});
+
+function updateProgress(step) {
+    const steps = ['step1', 'step2', 'step3', 'step4', 'step5'];
+    const progress = [20, 40, 60, 80, 100];
+    
+    steps.forEach((s, i) => {
+        const element = document.getElementById(s);
+        if (i < step) {
+            element.classList.add('completed');
+            element.classList.remove('active');
+        } else if (i === step) {
+            element.classList.add('active');
+            element.classList.remove('completed');
+        } else {
+            element.classList.remove('active', 'completed');
+        }
+    });
+    
+    const progressBar = document.getElementById('scanProgress');
+    progressBar.style.width = progress[step] + '%';
+    progressBar.textContent = progress[step] + '%';
+}
+
+function showProgress() {
+    let step = 0;
+    const interval = setInterval(() => {
+        updateProgress(step);
+        step++;
+        if (step >= 5) clearInterval(interval);
+    }, 1000);
+}
+
+function displayResults(data) {
+    document.getElementById('loadingSection').classList.add('hidden');
+    document.getElementById('resultsSection').classList.remove('hidden');
+    document.getElementById('scanBtn').disabled = false;
+    document.getElementById('btnText').textContent = 'Scan Now';
+
+    const trustedCheck = checkTrustedDomain(data.url);
+    
+    updateTrustNavigatorDisplay(data, trustedCheck);
+
+    // ✅ FIXED: Use Flask backend field names with underscores
+    const hasSSL = data.ssl_info?.ssl_valid || data.ssl_info?.has_ssl || false;
+    const hasVirus = data.virustotal_data?.positives > 0;
+    
+    let isSafe, riskLevel;
+    
+    if (trustedCheck.isTrusted) {
+        isSafe = true;
+        riskLevel = 'SAFE - TRUSTED DOMAIN';
+    } else {
+        isSafe = hasSSL && !hasVirus;
+        riskLevel = (!hasSSL && hasVirus) ? 'RISKY' : (!hasSSL || hasVirus) ? 'SUSPICIOUS' : 'SAFE';
+    }
+
+    incrementStats(isSafe);
+    addToHistory(data.url, riskLevel, riskLevel, 'URL');
+}
+
+function updateTrustNavigatorDisplay(data, trustedCheck) {
+    // ✅ FIXED: Use correct Flask backend field names (with underscores)
+    const ssl = data.ssl_info;
+    const vt = data.virustotal_data;
+    const ml = data.ml_prediction;
+    const domain = data.domain_info;
+
+    // ✅ DEBUG
+    console.log('═══════════════════════════════════════');
+    console.log('🔍 SSL & DOMAIN DATA DEBUG');
+    console.log('═══════════════════════════════════════');
+    console.log('🔒 SSL Info:', ssl);
+    console.log('🔒 SSL Keys:', ssl ? Object.keys(ssl) : 'NO SSL');
+    console.log('🌐 Domain Info:', domain);
+    console.log('🌐 Domain Keys:', domain ? Object.keys(domain) : 'NO DOMAIN');
+    console.log('═══════════════════════════════════════');
+
+    const hasSSL = ssl?.ssl_valid || ssl?.has_ssl || false;
+    const hasVirus = vt?.positives > 0;
+
+    let threatLevel = 'SAFE';
+    let threatClass = 'success';
+    let threatIcon = 'check-circle';
+
+    if (trustedCheck.isTrusted) {
+        threatLevel = 'VERIFIED TRUSTED';
+        threatClass = 'success';
+        threatIcon = 'shield-alt';
+    } else if (!hasSSL && hasVirus) {
+        threatLevel = 'RISKY';
+        threatClass = 'danger';
+        threatIcon = 'times-circle';
+    } else if (!hasSSL || hasVirus) {
+        threatLevel = 'SUSPICIOUS';
+        threatClass = 'warning';
+        threatIcon = 'exclamation-triangle';
+    }
+
+    document.getElementById('threatLevel').className = `badge bg-${threatClass} ms-2`;
+    document.getElementById('threatLevel').innerHTML = `<i class="fas fa-${threatIcon}"></i> ${threatLevel}`;
+    document.getElementById('threatLevel').style.cssText = 'font-size: 1rem; padding: 0.5rem 1rem;';
+
+    document.getElementById('mlConfidenceNav').textContent = ml?.confidence ? ml.confidence.toFixed(1) + '%' : '0%';
+    document.getElementById('vtCount').textContent = `${vt?.positives || 0}/${vt?.total || 98}`;
+
+    if (vt?.positives > 0) {
+        document.getElementById('vtDetectionsNav').className = 'text-danger ms-2';
+        document.getElementById('vtDetectionsNav').innerHTML = `<i class="fas fa-exclamation-circle"></i> <span id="vtCount">${vt?.positives || 0}/${vt?.total || 98}</span> detections`;
+    } else {
+        document.getElementById('vtDetectionsNav').className = 'text-success ms-2';
+        document.getElementById('vtDetectionsNav').innerHTML = `<i class="fas fa-check-circle"></i> <span id="vtCount">0/${vt?.total || 98}</span> detections`;
+    }
+
+    // ✅ FIXED: Domain Age
+    let ageInYears = 0;
+    if (domain) {
+        const ageInDays = domain.age_days || domain.agedays || domain.domain_age || 0;
+        ageInYears = ageInDays ? (ageInDays / 365).toFixed(1) : 0;
+    }
+    document.getElementById('domainYears').textContent = ageInYears;
+
+    if (ageInYears >= 1) {
+        document.getElementById('domainAgeNav').className = 'badge bg-success ms-2';
+        document.getElementById('domainStatusText').textContent = 'Established Domain';
+    } else {
+        document.getElementById('domainAgeNav').className = 'badge bg-warning ms-2';
+        document.getElementById('domainStatusText').textContent = 'New Domain - Exercise Caution';
+    }
+
+    // ✅ FIXED: Registration Date
+    let registrationDate = 'Not Available';
+    if (domain) {
+        registrationDate = domain.creation_date || domain.created || domain.registered || 
+                          domain.registration_date || domain.domain_created || 'Not Available';
+    }
+    document.getElementById('registeredDate').textContent = registrationDate;
+
+    // ✅ SSL CARD
+    const sslCardHeader = document.getElementById('sslCardHeader');
+    
+    if (ssl && Object.keys(ssl).length > 0) {
+        const isSSLValid = ssl.ssl_valid || ssl.has_ssl || ssl.valid || false;
+        const isExpired = ssl.expired === true || ssl.ssl_valid === false;
+        
+        if (isSSLValid && !isExpired) {
+            document.getElementById('sslStatusBadge').className = 'badge bg-success';
+            document.getElementById('sslStatusBadge').innerHTML = '<i class="fas fa-check-circle"></i> VALID';
+            sslCardHeader.className = 'card-header text-white ssl-card-secure';
+        } else if (isSSLValid && isExpired) {
+            document.getElementById('sslStatusBadge').className = 'badge bg-warning';
+            document.getElementById('sslStatusBadge').innerHTML = '<i class="fas fa-exclamation-triangle"></i> EXPIRED/INVALID';
+            sslCardHeader.className = 'card-header text-white ssl-card-warning';
+        } else {
+            document.getElementById('sslStatusBadge').className = 'badge bg-danger';
+            document.getElementById('sslStatusBadge').innerHTML = '<i class="fas fa-times-circle"></i> NO SSL';
+            sslCardHeader.className = 'card-header text-white ssl-card-danger';
+        }
+    } else {
+        document.getElementById('sslStatusBadge').className = 'badge bg-danger';
+        document.getElementById('sslStatusBadge').innerHTML = '<i class="fas fa-times-circle"></i> NO SSL';
+        sslCardHeader.className = 'card-header text-white ssl-card-danger';
+    }
+
+    // ✅ FIXED: SSL Message
+    let sslMessage = 'No SSL information available';
+    if (ssl) {
+        sslMessage = ssl.message || ssl.ssl_status || ssl.status || ssl.error || 
+                    ssl.info || ssl.description || 
+                    (ssl.ssl_valid ? 'Valid SSL certificate detected' : 'No SSL certificate found');
+    }
+    document.getElementById('sslMessageNav').textContent = sslMessage;
+    
+    // ✅ FIXED: Issuer
+    let issuer = 'Not Available';
+    if (ssl) {
+        issuer = ssl.issuer || ssl.issuer_name || ssl.issuer_organization || 
+                ssl.certificate_issuer || ssl.ca || ssl.authority || 'Unknown Issuer';
+        
+        if (typeof issuer === 'object') {
+            issuer = issuer.O || issuer.organizationName || JSON.stringify(issuer);
+        }
+    }
+    document.getElementById('sslIssuerNav').textContent = issuer;
+    
+    // ✅ FIXED: Common Name
+    let commonName = 'Not Available';
+    if (ssl) {
+        commonName = ssl.common_name || ssl.commonname || ssl.subject || 
+                    ssl.hostname || ssl.host || ssl.domain || data.domain || 'Unknown';
+        
+        if (typeof commonName === 'object') {
+            commonName = commonName.CN || commonName.commonName || JSON.stringify(commonName);
+        }
+    }
+    document.getElementById('commonName').textContent = commonName;
+
+    // ✅ FIXED: Issue Date
+    let issueDate = 'Not Available';
+    let issueDateRaw = null;
+    
+    if (ssl) {
+        issueDateRaw = ssl.valid_from || ssl.not_before || ssl.issued_on || 
+                      ssl.issue_date || ssl.start_date || ssl.notBefore;
+        
+        if (issueDateRaw) {
+            try {
+                const dateObj = new Date(issueDateRaw);
+                if (!isNaN(dateObj.getTime())) {
+                    issueDate = dateObj.toLocaleDateString('en-US', { 
+                        year: 'numeric', month: 'short', day: 'numeric' 
+                    });
+                } else {
+                    issueDate = String(issueDateRaw);
+                }
+            } catch (e) {
+                issueDate = String(issueDateRaw);
+            }
+        }
+    }
+    document.getElementById('issueDate').textContent = issueDate;
+
+    // ✅ FIXED: Expiry Date
+    let expiryDate = 'Not Available';
+    let expiryDateForCalculation = null;
+    let expiryDateRaw = null;
+    
+    if (ssl) {
+        expiryDateRaw = ssl.valid_to || ssl.not_after || ssl.expires_on || 
+                       ssl.expiry_date || ssl.end_date || ssl.notAfter;
+        
+        if (expiryDateRaw) {
+            try {
+                const dateObj = new Date(expiryDateRaw);
+                if (!isNaN(dateObj.getTime())) {
+                    expiryDate = dateObj.toLocaleDateString('en-US', { 
+                        year: 'numeric', month: 'short', day: 'numeric' 
+                    });
+                    expiryDateForCalculation = dateObj;
+                } else {
+                    expiryDate = String(expiryDateRaw);
+                }
+            } catch (e) {
+                expiryDate = String(expiryDateRaw);
+            }
+        }
+    }
+    document.getElementById('expiryDate').textContent = expiryDate;
+
+    // ✅ FIXED: Days Until Expiry
+    if (expiryDateForCalculation) {
+        try {
+            const today = new Date();
+            const daysLeft = Math.ceil((expiryDateForCalculation - today) / (1000 * 60 * 60 * 24));
+            
+            if (daysLeft > 0) {
+                document.getElementById('daysUntilExpiry').textContent = daysLeft + ' days';
+                
+                if (daysLeft < 30) {
+                    document.getElementById('daysUntilExpiry').style.color = '#ef4444';
+                    document.getElementById('validityMessage').className = 'alert alert-danger mt-3 mb-0';
+                    document.getElementById('validityMessage').innerHTML = `<i class="fas fa-exclamation-triangle"></i> Expires in ${daysLeft} days!`;
+                } else if (daysLeft < 90) {
+                    document.getElementById('daysUntilExpiry').style.color = '#f59e0b';
+                    document.getElementById('validityMessage').className = 'alert alert-warning mt-3 mb-0';
+                    document.getElementById('validityMessage').innerHTML = `<i class="fas fa-clock"></i> Valid for ${daysLeft} days`;
+                } else {
+                    document.getElementById('daysUntilExpiry').style.color = '#22c55e';
+                    document.getElementById('validityMessage').className = 'alert alert-success mt-3 mb-0';
+                    document.getElementById('validityMessage').innerHTML = `<i class="fas fa-check-circle"></i> Valid for ${daysLeft} days`;
+                }
+            } else {
+                document.getElementById('daysUntilExpiry').textContent = 'EXPIRED';
+                document.getElementById('daysUntilExpiry').style.color = '#ef4444';
+                document.getElementById('validityMessage').innerHTML = '<i class="fas fa-exclamation-triangle"></i> Certificate EXPIRED!';
+                document.getElementById('validityMessage').className = 'alert alert-danger mt-3 mb-0';
+            }
+        } catch (error) {
+            document.getElementById('daysUntilExpiry').textContent = 'Not Available';
+            document.getElementById('validityMessage').innerHTML = '<i class="fas fa-info-circle"></i> Unable to calculate';
+            document.getElementById('validityMessage').className = 'alert alert-info mt-3 mb-0';
+        }
+    } else {
+        document.getElementById('daysUntilExpiry').textContent = 'Not Available';
+        document.getElementById('validityMessage').innerHTML = '<i class="fas fa-info-circle"></i> Expiry date not found';
+        document.getElementById('validityMessage').className = 'alert alert-info mt-3 mb-0';
+    }
+
+    if (ageInYears >= 1) {
+        document.getElementById('establishedMessage').textContent = 'Domain registered over a year - positive indicator.';
+    } else {
+        document.getElementById('establishedMessage').textContent = 'Domain is new - verify authenticity before proceeding.';
+    }
+
+    if (trustedCheck.isTrusted) {
+        const hasValidSSL = ssl && (ssl.ssl_valid || ssl.has_ssl);
+        document.getElementById('securityAwareness').innerHTML = `
+            <div class="alert alert-success mb-3" style="border-left: 5px solid #22c55e; background: #f0fdf4;">
+                <h6><i class="fas fa-shield-check"></i> Verified Trusted Domain</h6>
+                <p class="mb-2"><strong>${trustedCheck.domain}</strong> is a verified trusted website.</p>
+                <p class="mb-0"><span class="badge bg-success px-3 py-2">${trustedCheck.category}</span> - This domain is globally recognized and considered safe.</p>
+            </div>
+            <p class="mb-0">Trusted domain${hasValidSSL ? ' with valid SSL' : ''}. Always verify the exact URL before entering sensitive information.</p>
+        `;
+    } else if (threatLevel === 'SAFE') {
+        document.getElementById('securityAwareness').textContent = 'Website appears secure with valid SSL encryption and no known threats detected. Always verify authenticity through official channels before sharing sensitive information.';
+    } else if (threatLevel === 'SUSPICIOUS') {
+        document.getElementById('securityAwareness').textContent = 'Caution advised! This website has security concerns (missing SSL or potential threats detected). Avoid entering sensitive information such as passwords or financial data.';
+    } else {
+        document.getElementById('securityAwareness').textContent = 'HIGH RISK! This website has NO SSL encryption AND malware detected. Do NOT enter any personal, financial, or login information. Leave this site immediately!';
+    }
+    
+    console.log('═══════════════════════════════════════');
+    console.log('✅ Display Update Complete');
+    console.log('═══════════════════════════════════════');
+}
+
+// ============================================
+// QR SCANNER
+// ============================================
+document.getElementById('startQRScan')?.addEventListener('click', function() {
+    const reader = document.getElementById('qrReader');
+    const startBtn = document.getElementById('startQRScan');
+    const stopBtn = document.getElementById('stopQRScan');
+    
+    reader.classList.remove('hidden');
+    startBtn.classList.add('hidden');
+    stopBtn.classList.remove('hidden');
+    isQRScanning = true;
+    
+    html5QrCode = new Html5Qrcode("qrReader");
+    html5QrCode.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: 250 },
+        (qrCodeMessage) => {
+            html5QrCode.stop();
+            reader.classList.add('hidden');
+            startBtn.classList.remove('hidden');
+            stopBtn.classList.add('hidden');
+            isQRScanning = false;
+            scanURLFromQR(qrCodeMessage);
+        }
+    ).catch(err => {
+        alert('Camera access denied or not available.');
+        reader.classList.add('hidden');
+        startBtn.classList.remove('hidden');
+        stopBtn.classList.add('hidden');
+        isQRScanning = false;
+    });
+});
+
+document.getElementById('stopQRScan')?.addEventListener('click', function() {
+    if (html5QrCode && isQRScanning) {
+        html5QrCode.stop();
+        document.getElementById('qrReader').classList.add('hidden');
+        document.getElementById('startQRScan').classList.remove('hidden');
+        document.getElementById('stopQRScan').classList.add('hidden');
+        isQRScanning = false;
+    }
+});
+
+document.getElementById('qrFileInput')?.addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    const resultDiv = document.getElementById('qrResult');
+    
+    if (file) {
+        html5QrCode = new Html5Qrcode("qrReader");
+        html5QrCode.scanFile(file, true)
+            .then(decodedText => {
+                scanURLFromQR(decodedText);
+            })
+            .catch(err => {
+                resultDiv.classList.remove('hidden');
+                resultDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-times-circle"></i> <strong>Error:</strong> No QR code found in image</div>`;
+            });
+    }
+});
+
+async function scanURLFromQR(qrData) {
+    const resultDiv = document.getElementById('qrResult');
+    
+    resultDiv.innerHTML = `<div class="text-center my-4"><div class="spinner-border text-primary mb-3"></div><h5>Analyzing QR Code...</h5><p class="text-muted">Detecting QR code type and content</p></div>`;
+    resultDiv.classList.remove('hidden');
+    
+    let qrType = 'Unknown';
+    let displayData = qrData;
+    let isURL = false;
+    let isScannable = false;
+    
+    if (qrData.startsWith('http') || qrData.startsWith('https') || qrData.match(/www\.?[a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}/)) {
+        qrType = 'Website URL';
+        isURL = true;
+        isScannable = true;
+    } else if (qrData.startsWith('upi://')) {
+        qrType = 'UPI Payment QR Code';
+        displayData = parseUPIData(qrData);
+    } else if (qrData.includes('paytm') || qrData.includes('phonepe') || qrData.includes('gpay') || qrData.includes('bhim')) {
+        qrType = 'Payment Gateway QR Code';
+    } else if (qrData.startsWith('WIFI:')) {
+        qrType = 'WiFi Configuration QR Code';
+        displayData = parseWiFiData(qrData);
+    } else if (qrData.startsWith('BEGIN:VCARD') || qrData.startsWith('MECARD:')) {
+        qrType = 'Contact Information QR Code';
+        displayData = parseContactData(qrData);
+    } else if (qrData.startsWith('mailto:') || qrData.startsWith('MATMSG:')) {
+        qrType = 'Email QR Code';
+    } else if (qrData.startsWith('sms:') || qrData.startsWith('SMSTO:')) {
+        qrType = 'SMS/Text Message QR Code';
+    } else if (qrData.startsWith('tel:')) {
+        qrType = 'Phone Number QR Code';
+    } else if (qrData.startsWith('geo:') || qrData.includes('maps.google.com') || qrData.includes('maps.app.goo.gl')) {
+        qrType = 'Location/Maps QR Code';
+        if (qrData.includes('http')) {
+            isURL = true;
+            isScannable = true;
+        }
+    } else {
+        qrType = 'Text/Verification Code';
+    }
+    
+    let resultHTML = `
+        <div class="card shadow-lg mb-4" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border: none;">
+            <div class="card-body p-4">
+                <h3 class="text-white mb-0"><i class="fas fa-qrcode"></i> QR Code Analysis Results</h3>
+            </div>
+        </div>
+        
+        <div class="card shadow-lg mb-4">
+            <div class="card-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <h5 class="text-white mb-0"><i class="fas fa-info-circle"></i> QR Code Type Detection</h5>
+            </div>
+            <div class="card-body p-4">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <div class="p-3" style="background: #f0f9ff; border-left: 4px solid #0ea5e9; border-radius: 6px;">
+                            <strong><i class="fas fa-tag text-info"></i> Detected Type:</strong>
+                            <h5 class="mt-2 mb-0" style="color: #0284c7;">${qrType}</h5>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="p-3" style="background: ${isScannable ? '#f0fdf4' : '#fef2f2'}; border-left: 4px solid ${isScannable ? '#22c55e' : '#ef4444'}; border-radius: 6px;">
+                            <strong><i class="fas ${isScannable ? 'fa-shield-alt' : 'fa-info-circle'} text-${isScannable ? 'success' : 'danger'}"></i> Security Scan:</strong>
+                            <h5 class="mt-2 mb-0" style="color: ${isScannable ? '#16a34a' : '#dc2626'};">${isScannable ? 'Available' : 'Not Applicable'}</h5>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card shadow-lg mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-file-alt"></i> QR Code Content</h5>
+            </div>
+            <div class="card-body p-4" style="background: #f8fafc;">
+                <div style="background: white; padding: 1.5rem; border-radius: 8px; border: 2px solid #e2e8f0; word-break: break-all; font-family: 'Courier New', monospace; max-height: 400px; overflow-y: auto;">
+                    ${displayData.replace(/\n/g, '<br>')}
+                </div>
+                ${isURL ? `<div class="mt-3"><button class="btn btn-primary" onclick="copyToClipboard('${qrData.replace(/'/g, "\\'")}')"><i class="fas fa-copy"></i> Copy URL</button></div>` : ''}
+            </div>
+        </div>
+    `;
+    
+    if (isURL && isScannable) {
+        resultHTML += `<div class="card shadow-lg mb-4"><div class="card-body p-4 text-center"><div class="spinner-border text-primary mb-3"></div><h5>Performing Security Scan...</h5></div></div>`;
+        resultDiv.innerHTML = resultHTML;
+        
+        try {
+            let processedURL = qrData;
+            if (!qrData.startsWith('http') && !qrData.startsWith('https')) {
+                processedURL = 'https://' + qrData;
+            }
+            
+            const trustedCheck = checkTrustedDomain(processedURL);
+            
+            const response = await fetch('/scan', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ url: processedURL })
+            });
+            
+            const data = await response.json();
+            
+            // ✅ FIXED: Use Flask backend field names
+            const hasSSL = data.ssl_info?.ssl_valid || data.ssl_info?.has_ssl || false;
+            const hasVirus = (data.virustotal_data?.positives || 0) > 0;
+            
+            let isSafe = false;
+            let riskLevel = 'SUSPICIOUS';
+            let riskClass = 'warning';
+            let riskIcon = 'exclamation-triangle';
+            
+            if (trustedCheck.isTrusted) {
+                riskLevel = 'SAFE - TRUSTED';
+                riskClass = 'success';
+                riskIcon = 'shield-alt';
+                isSafe = true;
+            } else if (!hasSSL && hasVirus) {
+                riskLevel = 'RISKY';
+                riskClass = 'danger';
+                riskIcon = 'times-circle';
+                isSafe = false;
+            } else if (!hasSSL || hasVirus) {
+                riskLevel = 'SUSPICIOUS';
+                riskClass = 'warning';
+                riskIcon = 'exclamation-triangle';
+                isSafe = false;
+            } else {
+                riskLevel = 'SAFE';
+                riskClass = 'success';
+                riskIcon = 'check-circle';
+                isSafe = true;
+            }
+            
+            incrementStats(isSafe);
+            addToHistory(processedURL, riskLevel, riskLevel, 'QR');
+            
+            const ssl = data.ssl_info;
+            const vt = data.virustotal_data;
+            const ml = data.ml_prediction;
+            
+            resultHTML = resultHTML.replace(/<div class="card shadow-lg mb-4"><div class="card-body p-4 text-center">.*?<\/div><\/div>/, '');
+            
+            resultHTML += `
+                <div class="card shadow-lg mb-4">
+                    <div class="card-header bg-${riskClass} text-white">
+                        <h5 class="mb-0"><i class="fas fa-shield-alt"></i> URL Security Analysis</h5>
+                    </div>
+                    <div class="card-body p-4">
+                        ${trustedCheck.isTrusted ? `
+                        <div class="alert alert-success mb-3" style="background: #f0fdf4;">
+                            <h6><i class="fas fa-check-circle"></i> Verified Trusted Domain</h6>
+                            <p class="mb-0"><strong>${trustedCheck.domain}</strong> is a verified trusted website (<span class="badge bg-success">${trustedCheck.category}</span>).</p>
+                        </div>
+                        ` : ''}
+                        
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <div class="text-center p-3" style="background: ${riskClass === 'success' ? '#f0fdf4' : (riskClass === 'danger' ? '#fef2f2' : '#fff7ed')}; border-radius: 8px;">
+                                    <i class="fas fa-${riskIcon} fa-3x mb-2" style="color: ${riskClass === 'success' ? '#22c55e' : (riskClass === 'danger' ? '#ef4444' : '#f59e0b')};"></i>
+                                    <h6>Threat Level</h6>
+                                    <span class="badge bg-${riskClass}" style="font-size: 1rem; padding: 0.5rem 1rem;">${riskLevel}</span>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="text-center p-3" style="background: #f0f9ff; border-radius: 8px;">
+                                    <i class="fas fa-robot fa-3x mb-2 text-primary"></i>
+                                    <h6>ML Confidence</h6>
+                                    <h4 class="mb-0">${ml?.confidence ? ml.confidence.toFixed(1) + '%' : 'N/A'}</h4>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="text-center p-3" style="background: ${(vt?.positives || 0) > 0 ? '#fef2f2' : '#f0fdf4'}; border-radius: 8px;">
+                                    <i class="fas fa-virus fa-3x mb-2" style="color: ${(vt?.positives || 0) > 0 ? '#ef4444' : '#22c55e'};"></i>
+                                    <h6>VirusTotal</h6>
+                                    <h4 class="mb-0">${vt?.positives || 0}/${vt?.total || 98}</h4>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="alert alert-${riskClass} mt-3 mb-0">
+                            <h6><i class="fas fa-info-circle"></i> Security Recommendation</h6>
+                            <p class="mb-0">${
+                                riskLevel === 'SAFE' || riskLevel === 'SAFE - TRUSTED' ? 
+                                '<strong>✅ This URL appears secure.</strong> The website has valid SSL encryption and no known threats detected.' :
+                                riskLevel === 'RISKY' ?
+                                '<strong>⚠️ HIGH RISK!</strong> This website has NO SSL encryption AND malware detected. Do NOT enter any personal information. Leave immediately!' :
+                                '<strong>⚠️ Exercise caution!</strong> This URL has security concerns (missing SSL or potential threats detected). Avoid entering sensitive information.'
+                            }</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            resultDiv.innerHTML = resultHTML;
+            
+        } catch (error) {
+            resultHTML += `<div class="alert alert-danger shadow"><h6><i class="fas fa-times-circle"></i> Security Scan Failed</h6><p class="mb-0"><strong>Error:</strong> ${error.message}</p></div>`;
+            resultDiv.innerHTML = resultHTML;
+        }
+    } else {
+        resultHTML += `
+            <div class="alert alert-info shadow-lg">
+                <h5><i class="fas fa-info-circle"></i> Information</h5>
+                <p class="mb-0">This QR code contains <strong>${qrType}</strong>. Security scanning is only available for website URLs. The content has been successfully decoded and displayed above.</p>
+            </div>
+        `;
+        resultDiv.innerHTML = resultHTML;
+    }
+}
+
+function parseUPIData(upiString) {
+    return upiString.replace(/&/g, '\n');
+}
+
+function parseWiFiData(wifiString) {
+    return wifiString.replace(/;/g, '\n').replace(/:/g, ': ');
+}
+
+function parseContactData(contactString) {
+    return contactString.replace(/;/g, '\n').replace(/:/g, ': ');
+}
+
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text)
+        .then(() => alert('URL copied to clipboard!'))
+        .catch(() => alert('Failed to copy URL'));
+}
+
+// ============================================
+// BULK SCANNER
+// ============================================
+document.getElementById('bulkFileInput')?.addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            const content = event.target.result;
+            bulkURLs = extractURLsFromContent(content);
+            
+            if (bulkURLs.length > 0) {
+                document.getElementById('startBulkScan').disabled = false;
+                alert(`Found ${bulkURLs.length} URLs. Click "Start Bulk Scan" to analyze.`);
+            } else {
+                alert('No URLs found in file.');
+                document.getElementById('startBulkScan').disabled = true;
+            }
+        };
+        reader.readAsText(file);
+    }
+});
+
+function extractURLsFromContent(content) {
+    const urlPattern = /(?:https?:\/\/)?(?:www\.)?([a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b[-a-zA-Z0-9()@:%_\+.~#?&//=]*)/gi;
+    const matches = content.match(urlPattern) || [];
+    const uniqueURLs = [...new Set(matches)].slice(0, 50);
+    return uniqueURLs.map(url => url.startsWith('http') ? url : 'https://' + url);
+}
+
+document.getElementById('startBulkScan')?.addEventListener('click', async function() {
+    if (bulkURLs.length === 0) {
+        alert('No URLs to scan');
+        return;
+    }
+    
+    document.getElementById('bulkProgress').classList.remove('hidden');
+    document.getElementById('bulkResultsDisplay').classList.add('hidden');
+    document.getElementById('startBulkScan').disabled = true;
+    
+    bulkScanResults = [];
+    
+    for (let i = 0; i < bulkURLs.length; i++) {
+        const url = bulkURLs[i];
+        const progress = ((i + 1) / bulkURLs.length * 100).toFixed(0);
+        
+        document.getElementById('bulkProgressBar').style.width = progress + '%';
+        document.getElementById('bulkProgressBar').textContent = progress + '%';
+        document.getElementById('bulkStatus').textContent = `Scanning ${i + 1} of ${bulkURLs.length}: ${url}`;
+        
+        try {
+            const trustedCheck = checkTrustedDomain(url);
+            
+            const response = await fetch('/scan', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ url: url })
+            });
+            
+            const data = await response.json();
+            
+            // ✅ FIXED: Use Flask backend field names
+            const hasSSL = data.ssl_info?.ssl_valid || data.ssl_info?.has_ssl || false;
+            const hasVirus = data.virustotal_data?.positives > 0;
+            
+            let status;
+            if (trustedCheck.isTrusted) {
+                status = 'SAFE - TRUSTED';
+            } else if (!hasSSL && hasVirus) {
+                status = 'RISKY';
+            } else if (!hasSSL || hasVirus) {
+                status = 'SUSPICIOUS';
+            } else {
+                status = 'SAFE';
+            }
+            
+            bulkScanResults.push({
+                url: url,
+                status: status,
+                ssl: hasSSL ? 'Valid' : 'Missing',
+                threats: data.virustotal_data?.positives || 0,
+                confidence: data.ml_prediction?.confidence || 0
+            });
+        } catch (error) {
+            bulkScanResults.push({
+                url: url,
+                status: 'ERROR',
+                ssl: 'N/A',
+                threats: 'N/A',
+                confidence: 'N/A'
+            });
+        }
+        
+        await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+    
+    displayBulkResults();
+});
+
+function displayBulkResults() {
+    document.getElementById('bulkProgress').classList.add('hidden');
+    document.getElementById('bulkResultsDisplay').classList.remove('hidden');
+    
+    const safe = bulkScanResults.filter(r => r.status === 'SAFE' || r.status === 'SAFE - TRUSTED').length;
+    const suspicious = bulkScanResults.filter(r => r.status === 'SUSPICIOUS').length;
+    const errors = bulkScanResults.filter(r => r.status === 'ERROR' || r.status === 'RISKY').length;
+    
+    document.getElementById('bulkSafeCount').textContent = `Safe: ${safe}`;
+    document.getElementById('bulkSuspiciousCount').textContent = `Suspicious: ${suspicious}`;
+    document.getElementById('bulkErrorCount').textContent = `Errors: ${errors}`;
+    
+    const tbody = document.getElementById('bulkResultsTable');
+    tbody.innerHTML = '';
+    
+    bulkScanResults.forEach((result, index) => {
+        const statusClass = result.status.includes('SAFE') || result.status.includes('TRUSTED') ? 'success' : 
+                           result.status === 'SUSPICIOUS' ? 'warning' : 'danger';
+        
+        tbody.innerHTML += `
+            <tr>
+                <td>${index + 1}</td>
+                <td class="url-cell">${result.url}</td>
+                <td><span class="badge bg-${statusClass}">${result.status}</span></td>
+                <td>${result.ssl}</td>
+                <td>${result.threats}</td>
+                <td>${typeof result.confidence === 'number' ? result.confidence.toFixed(1) + '%' : result.confidence}</td>
+            </tr>
+        `;
+    });
+}
+
+document.getElementById('downloadPDF')?.addEventListener('click', function() {
+    alert('PDF download feature - integrate jsPDF library');
+});
+
+document.getElementById('downloadTXT')?.addEventListener('click', function() {
+    let text = 'WebGuard AI - Bulk Scan Results\n\n';
+    bulkScanResults.forEach((r, i) => {
+        text += `${i + 1}. ${r.url}\n   Status: ${r.status} | SSL: ${r.ssl} | Threats: ${r.threats}\n\n`;
+    });
+    
+    const blob = new Blob([text], { type: 'text/plain' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `WebGuard_BulkScan_${Date.now()}.txt`;
+    link.click();
+});
+
+document.getElementById('downloadCSV')?.addEventListener('click', function() {
+    let csv = 'No,URL,Status,SSL,Threats,Confidence\n';
+    bulkScanResults.forEach((r, i) => {
+        csv += `${i + 1},"${r.url}",${r.status},${r.ssl},${r.threats},${r.confidence}\n`;
+    });
+    
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `WebGuard_BulkScan_${Date.now()}.csv`;
+    link.click();
+});
+
+// ============================================
+// PDF DOWNLOAD
+// ============================================
+document.getElementById('downloadReportBtn')?.addEventListener('click', function() {
+    if (!currentScanData) {
+        alert('No scan data available');
+        return;
+    }
+    
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    
+    doc.setFontSize(20);
+    doc.setTextColor(102, 126, 234);
+    doc.text('WEBGUARD AI', 105, 20, { align: 'center' });
+    
+    doc.setFontSize(12);
+    doc.setTextColor(0, 0, 0);
+    doc.text('Security Scan Report', 105, 28, { align: 'center' });
+    doc.text(`URL: ${currentScanData.url}`, 20, 40);
+    doc.text(`Date: ${new Date().toLocaleString()}`, 20, 46);
+    
+    doc.save(`WebGuard_Report_${Date.now()}.pdf`);
+});
+
+// ============================================
+// THEME TOGGLE
+// ============================================
+document.getElementById('themeToggle')?.addEventListener('click', function() {
+    document.body.classList.toggle('dark-mode');
+    const icon = this.querySelector('i');
+    
+    if (document.body.classList.contains('dark-mode')) {
+        icon.classList.remove('fa-moon');
+        icon.classList.add('fa-sun');
+        localStorage.setItem('theme', 'dark');
+    } else {
+        icon.classList.remove('fa-sun');
+        icon.classList.add('fa-moon');
+        localStorage.setItem('theme', 'light');
+    }
+});
+
+// Load saved theme
+if (localStorage.getItem('theme') === 'dark') {
+    document.body.classList.add('dark-mode');
+    document.getElementById('themeToggle').querySelector('i').classList.replace('fa-moon', 'fa-sun');
+}
+
+// ============================================
+// INITIALIZE
+// ============================================
+updateStatistics();
+displayHistory();
+
+</script>
+
+</body>
+
+</html>
