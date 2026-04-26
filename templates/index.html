@@ -1065,15 +1065,17 @@ Email body content here..." required></textarea>
 
 <th style="width: 5%;">#</th>
 
-<th style="width: 35%;">URL</th>
+<th style="width: 30%;">URL</th>
 
-<th style="width: 15%;">Status</th>
+<th style="width: 13%;">Status</th>
 
-<th style="width: 15%;">SSL</th>
+<th style="width: 10%;">SSL</th>
 
-<th style="width: 15%;">Threats</th>
+<th style="width: 10%;">Threats</th>
 
-<th style="width: 15%;">Confidence</th>
+<th style="width: 12%;">Confidence</th>
+
+<th style="width: 10%;">AI Score</th>
 
 </tr>
 
@@ -2448,6 +2450,10 @@ function displayEmailResults(analysis, content, sender, subject) {
     `;
     
     resultsDiv.innerHTML = html;
+
+    // ── AI SCORING ENGINE: update risk meter for email scan ─────────────────
+    const _emailRiskScore = updateEmailRiskMeter(analysis.threatScore || 0);
+    if (lastEmailReportData) lastEmailReportData._riskScore = _emailRiskScore;
 }
 
 // ── TASK 2: Email PDF download — reuses buildBrandedPDF ─────────────────────
@@ -2459,32 +2465,56 @@ function downloadEmailReport() {
     const H = doc.internal.pageSize.getHeight();
     const d = lastEmailReportData;
 
-    const riskColor = d.riskLevel === 'SAFE' ? [34,197,94]
-        : d.riskLevel === 'DANGEROUS' ? [239,68,68]
-        : [245,158,11];
+    // ── FIXED: correct risk colour (matches riskLevel values set in analyzeEmail) ──
+    const riskColor = (d.riskLevel === 'SAFE' || d.threatLevel === 'LOW')
+        ? [34, 197, 94]
+        : (d.riskLevel === 'DANGEROUS' || d.threatLevel === 'HIGH')
+        ? [239, 68, 68]
+        : [245, 158, 11];
 
-    // Build all-emails string for scannedValue field
-    const emailList = d.allEmails.length > 0
+    // Build primary email / all-emails string for the "Scanned" header box
+    const emailList = (d.allEmails && d.allEmails.length > 0)
         ? d.allEmails.map(e => e.email).join(', ')
-        : d.emailAddress;
+        : (d.emailAddress || 'N/A');
 
+    // ── DEBUG — verify what goes into the PDF ────────────────────────────────
+    console.log('[Email PDF] reportData:', JSON.stringify(d, null, 2));
+    console.log('[Email PDF] emailList:', emailList);
+    console.log('[Email PDF] sender:', d.sender, '| subject:', d.subject);
+    console.log('[Email PDF] threatScore:', d.threatScore, '| riskLevel:', d.riskLevel);
+    console.log('[Email PDF] domain:', d.domain, '| scanDate:', d.scanDate);
+
+    // ── FIXED field mapping — each label now carries the right email value ───
+    // The shared buildBrandedPDF renders these generic slots; we repurpose them
+    // with meaningful email-scan data instead of SSL/domain jargon:
+    //
+    //   PDF slot        → Email meaning
+    //   --------------- → ----------------------------
+    //   sslMsg          → Sender address
+    //   issuer          → Email subject line
+    //   issueDate       → Primary email / domain
+    //   expiryDate      → Detected link count
+    //   ageInYears      → (hidden — N/A)
+    //   regDate         → Scan date string
     buildBrandedPDF(doc, W, H, {
-        title      : 'Email Security Report',
-        scanType   : 'Email Scan',
-        scannedValue: emailList,
-        riskLevel  : d.riskLevel,
+        title        : 'Email Security Report',
+        scanType     : 'Email Scan',
+        scannedValue : emailList,
+        riskLevel    : d.riskLevel    || 'N/A',
         riskColor,
-        mlConf     : `Threat Score: ${d.threatScore}/100`,
-        vtStr      : `${d.threatLevel} Risk`,
-        hasSSL     : false,
-        sslMsg     : `Sender: ${d.sender}`,
-        issuer     : `Subject: ${d.subject}`,
-        issueDate  : `Domain: ${d.domain}`,
-        expiryDate : `Scan Type: Email`,
-        ageInYears : 'N/A',
-        regDate    : 'N/A',
-        recText    : d.recommendation.replace(/[✅⚠️🚨]/g, '').trim(),
-        scanDate   : d.scanDate
+        mlConf       : `Threat Score: ${d.threatScore != null ? d.threatScore : 'N/A'}/100`,
+        vtStr        : `${d.threatLevel || 'N/A'} Risk`,
+        hasSSL       : false,
+        // ── corrected email-specific fields ──────────────────────────────────
+        sslMsg       : d.sender  !== 'N/A' ? d.sender  : 'Not provided',
+        issuer       : d.subject !== 'N/A' ? d.subject : 'Not provided',
+        // FIX: issueDate = scan date (now), expiryDate = scan date + 7 days
+        issueDate    : new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
+        expiryDate   : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
+        ageInYears   : 'N/A',
+        regDate      : d.scanDate || new Date().toLocaleString(),
+        recText      : (d.recommendation || '').replace(/[✅⚠️🚨]/g, '').trim(),
+        scanDate     : d.scanDate || new Date().toLocaleString()
     });
 
     doc.save(`WebGuard_Email_Report_${Date.now()}.pdf`);
@@ -2755,7 +2785,24 @@ function updateTrustNavigatorDisplay(data, trustedCheck) {
     document.getElementById('threatLevel').className = `badge bg-${threatClass} ms-2`;
     document.getElementById('threatLevel').innerHTML = `<i class="fas fa-${threatIcon}"></i> ${threatLevel}`;
     document.getElementById('threatLevel').style.cssText = 'font-size: 1rem; padding: 0.5rem 1rem;';
-    updateRiskMeter(threatLevel);
+
+    // ── AI SCORING ENGINE: build full params and call with real signals ──────
+    const _ageForScore = (() => {
+        if (!domain) return 0;
+        const days = domain.age_days || domain.agedays || domain.domain_age || 0;
+        return days ? days / 365 : 0;
+    })();
+    updateRiskMeter(threatLevel, {
+        hasSSL      : hasSSL,
+        ageInYears  : _ageForScore,
+        vtPositives : vt?.positives || 0,
+        vtTotal     : vt?.total     || 98,
+        mlConfidence: ml?.confidence || 0,
+        mlLabel     : ml?.label     || (hasSSL && !hasVirus ? 'safe' : 'phishing'),
+        url         : data.url || '',
+        isTrusted   : trustedCheck?.isTrusted || false,
+        scanType    : 'url'
+    });
     document.getElementById('mlConfidenceNav').textContent = ml?.confidence ? ml.confidence.toFixed(1) + '%' : '0%';
     document.getElementById('vtCount').textContent = `${vt?.positives || 0}/${vt?.total || 98}`;
 
@@ -3332,13 +3379,21 @@ async function scanURLFromQR(qrData) {
             `;
             resultDiv.appendChild(newContent);
 
-            // Update the QR risk meter bar now that DOM is rendered
+            // Update the QR risk meter bar using AI scoring engine
             const qrBar = document.getElementById('qrRiskMeterBar');
             if (qrBar) {
-                qrBar.classList.remove('risk-safe','risk-warning','risk-danger');
-                qrBar.classList.add(mClass);
-                qrBar.style.width = mWidth;
-                qrBar.textContent = mLabel;
+                const qrScore = updateQRRiskMeter({
+                    hasSSL      : hasSSL,
+                    ageInYears  : ageInYears,
+                    vtPositives : vt?.positives || 0,
+                    vtTotal     : vt?.total     || 98,
+                    mlConfidence: ml?.confidence || 0,
+                    mlLabel     : ml?.label     || (isSafe ? 'safe' : 'phishing'),
+                    url         : processedURL   || '',
+                    isTrusted   : trustedCheck?.isTrusted || false
+                });
+                // Store score on shared data object for PDF usage
+                if (lastQRReportData) lastQRReportData._riskScore = qrScore;
             }
 
         } catch (error) {
@@ -3494,12 +3549,27 @@ document.getElementById('startBulkScan')?.addEventListener('click', async functi
                 status = 'SAFE';
             }
             
+            // ── AI SCORING ENGINE: compute score for this URL ─────────────────
+            const _domainDays = data.domain_info?.age_days || data.domain_info?.agedays || data.domain_info?.domain_age || 0;
+            const _aiScore = computeRiskScore({
+                hasSSL      : hasSSL,
+                ageInYears  : _domainDays ? _domainDays / 365 : 0,
+                vtPositives : data.virustotal_data?.positives || 0,
+                vtTotal     : data.virustotal_data?.total     || 98,
+                mlConfidence: data.ml_prediction?.confidence  || 0,
+                mlLabel     : data.ml_prediction?.label       || (hasSSL && !hasVirus ? 'safe' : 'phishing'),
+                url         : url,
+                isTrusted   : trustedCheck?.isTrusted || false,
+                scanType    : 'bulk'
+            });
+
             bulkScanResults.push({
                 url: url,
                 status: status,
                 ssl: hasSSL ? 'Valid' : 'Missing',
                 threats: data.virustotal_data?.positives || 0,
-                confidence: data.ml_prediction?.confidence || 0
+                confidence: data.ml_prediction?.confidence || 0,
+                aiScore: _aiScore
             });
         } catch (error) {
             bulkScanResults.push({
@@ -3544,13 +3614,191 @@ function displayBulkResults() {
                 <td>${result.ssl}</td>
                 <td>${result.threats}</td>
                 <td>${typeof result.confidence === 'number' ? result.confidence.toFixed(1) + '%' : result.confidence}</td>
+                <td><span class="badge bg-${result.aiScore <= 30 ? 'success' : result.aiScore <= 70 ? 'warning' : 'danger'}">${typeof result.aiScore === 'number' ? result.aiScore + '/100' : '—'}</span></td>
             </tr>
         `;
     });
 }
 
 document.getElementById('downloadPDF')?.addEventListener('click', function() {
-    alert('PDF download feature - integrate jsPDF library');
+    // ── Guard: nothing scanned yet ────────────────────────────────────────────
+    if (!bulkScanResults || bulkScanResults.length === 0) {
+        alert('No scan data available. Please run a bulk scan first.');
+        return;
+    }
+
+    console.log('[Bulk PDF] generating report for', bulkScanResults.length, 'URLs');
+
+    const { jsPDF } = window.jspdf;
+    const doc  = new jsPDF({ unit: 'mm', format: 'a4' });
+    const W    = doc.internal.pageSize.getWidth();
+    const H    = doc.internal.pageSize.getHeight();
+    const purple     = [102, 126, 234];
+    const darkPurple = [118,  75, 162];
+    const dark       = [ 45,  55,  72];
+    const mid        = [113, 128, 150];
+    const light      = [247, 250, 252];
+    const scanDate   = new Date().toLocaleString();
+
+    // ── Summary counts ────────────────────────────────────────────────────────
+    const safeCount       = bulkScanResults.filter(r => r.status.includes('SAFE')).length;
+    const suspiciousCount = bulkScanResults.filter(r => r.status === 'SUSPICIOUS').length;
+    const riskyCount      = bulkScanResults.filter(r => r.status === 'RISKY' || r.status === 'ERROR').length;
+
+    // ── Helper: branded header ────────────────────────────────────────────────
+    function drawPageHeader(pageNum, totalPages) {
+        doc.setFillColor(...purple);
+        doc.rect(0, 0, W, 28, 'F');
+        doc.setFillColor(...darkPurple);
+        doc.rect(W - 30, 0, 30, 28, 'F');
+        try {
+            const lc2 = document.createElement('canvas');
+            lc2.width = 80; lc2.height = 80;
+            const lctx = lc2.getContext('2d');
+            const g = lctx.createLinearGradient(0,0,80,80);
+            g.addColorStop(0,'#667eea'); g.addColorStop(1,'#764ba2');
+            lctx.beginPath(); lctx.arc(40,40,38,0,Math.PI*2);
+            lctx.fillStyle = g; lctx.fill();
+            lctx.fillStyle = '#ffffff';
+            lctx.beginPath(); lctx.moveTo(40,12); lctx.lineTo(62,22); lctx.lineTo(62,40);
+            lctx.quadraticCurveTo(62,60,40,68); lctx.quadraticCurveTo(18,60,18,40);
+            lctx.lineTo(18,22); lctx.closePath(); lctx.fill();
+            lctx.fillStyle='#667eea'; lctx.font='bold 26px Arial';
+            lctx.textAlign='center'; lctx.textBaseline='middle'; lctx.fillText('W',40,41);
+            doc.addImage(lc2.toDataURL('image/png'),'PNG',5,3,22,22);
+        } catch(e) {}
+        doc.setFont('helvetica','bold'); doc.setFontSize(18); doc.setTextColor(255,255,255);
+        doc.text('WebGuard AI', 32, 12);
+        doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(220,220,255);
+        doc.text('AI-Powered Security Dashboard', 32, 18);
+        doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(255,255,255);
+        doc.text('BULK SCAN REPORT', W - 28, 10);
+        doc.setFont('helvetica','normal'); doc.setFontSize(6);
+        doc.text('Page ' + pageNum + ' of ' + totalPages, W - 28, 16);
+    }
+
+    // ── Helper: branded footer ────────────────────────────────────────────────
+    function drawPageFooter() {
+        doc.setFillColor(...purple);
+        doc.rect(0, H - 14, W, 14, 'F');
+        doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(255,255,255);
+        doc.text('© WebGuard-AI. All rights reserved.', 14, H - 8.5);
+        doc.text('Generated: ' + scanDate, 14, H - 4);
+        doc.setFont('helvetica','bold');
+        doc.text('WebGuard AI — AI-Powered Security Dashboard', W - 14, H - 6.5, { align: 'right' });
+    }
+
+    // ── Pre-calculate total pages ─────────────────────────────────────────────
+    const ROW_H       = 10;
+    const PAGE1_START = 36 + 10 + 34 + 10; // title(10) + gap(10) + summary(28+6) + tableHeader(10)
+    const ROWS_PG1    = Math.floor((H - PAGE1_START - 14) / ROW_H);
+    const ROWS_PGN    = Math.floor((H - 28 - 10 - 14)    / ROW_H);
+    const remaining   = Math.max(0, bulkScanResults.length - ROWS_PG1);
+    const extraPages  = remaining > 0 ? Math.ceil(remaining / ROWS_PGN) : 0;
+    const totalPages  = 1 + extraPages;
+
+    // ── Page 1 ────────────────────────────────────────────────────────────────
+    drawPageHeader(1, totalPages);
+    let y = 36;
+
+    // Title block
+    doc.setFont('helvetica','bold'); doc.setFontSize(15); doc.setTextColor(...dark);
+    doc.text('Bulk URL Scan Report', W / 2, y, { align: 'center' });
+    y += 5;
+    doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...mid);
+    doc.text('Scanned ' + bulkScanResults.length + ' URL(s) — ' + scanDate, W / 2, y, { align: 'center' });
+    y += 10;
+
+    // Summary banner (3 coloured boxes)
+    doc.setFillColor(...light);
+    doc.roundedRect(10, y, W - 20, 28, 2, 2, 'F');
+    const colW = (W - 20) / 3;
+    const boxes = [
+        { count: safeCount,       label: 'SAFE',          color: [34,197,94]  },
+        { count: suspiciousCount, label: 'SUSPICIOUS',    color: [245,158,11] },
+        { count: riskyCount,      label: 'RISKY / ERROR', color: [239,68,68]  }
+    ];
+    boxes.forEach((b, i) => {
+        const bx = 12 + colW * i;
+        doc.setFillColor(...b.color);
+        doc.roundedRect(bx, y + 2, colW - 4, 24, 2, 2, 'F');
+        doc.setFont('helvetica','bold'); doc.setFontSize(18); doc.setTextColor(255,255,255);
+        doc.text(String(b.count), bx + (colW - 4) / 2, y + 13, { align: 'center' });
+        doc.setFontSize(7);
+        doc.text(b.label, bx + (colW - 4) / 2, y + 21, { align: 'center' });
+    });
+    y += 34;
+
+    // Table header row
+    function drawTableHeader() {
+        doc.setFillColor(...purple);
+        doc.rect(10, y, W - 20, 9, 'F');
+        doc.setFont('helvetica','bold'); doc.setFontSize(7.5); doc.setTextColor(255,255,255);
+        doc.text('#',           14,     y + 6);
+        doc.text('URL',         22,     y + 6);
+        doc.text('Status',      W-100,  y + 6);
+        doc.text('SSL',         W-72,   y + 6);
+        doc.text('Threats',     W-54,   y + 6);
+        doc.text('AI Score',    W-36,   y + 6);
+        y += 10;
+    }
+    drawTableHeader();
+
+    // ── Result rows with pagination ───────────────────────────────────────────
+    let pageNum = 1;
+    bulkScanResults.forEach(function(result, index) {
+        if (y + ROW_H > H - 14) {
+            drawPageFooter();
+            doc.addPage();
+            pageNum++;
+            drawPageHeader(pageNum, totalPages);
+            y = 36;
+            drawTableHeader();
+        }
+
+        // Alternating shade
+        if (index % 2 === 0) { doc.setFillColor(...light); doc.rect(10, y, W-20, ROW_H, 'F'); }
+
+        // Status pill
+        const su = (result.status || '').toUpperCase();
+        const pillColor = su.includes('SAFE') ? [34,197,94] : su === 'SUSPICIOUS' ? [245,158,11] : [239,68,68];
+        doc.setFillColor(...pillColor);
+        doc.roundedRect(W - 103, y + 1.5, 30, 7, 1, 1, 'F');
+
+        // Row number + URL
+        doc.setFont('helvetica','bold'); doc.setFontSize(7.5); doc.setTextColor(...dark);
+        doc.text(String(index + 1), 14, y + 6.5);
+        doc.setFont('helvetica','normal');
+        doc.text(doc.splitTextToSize(result.url || '—', 60)[0], 22, y + 6.5);
+
+        // Status label inside pill
+        doc.setFont('helvetica','bold'); doc.setFontSize(6.5); doc.setTextColor(255,255,255);
+        doc.text(result.status || '—', W - 88, y + 6.5);
+
+        // Remaining cols — AI Score replaces Confidence
+        doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(...dark);
+        doc.text(String(result.ssl     || '—'), W - 72, y + 6.5);
+        doc.text(String(result.threats != null ? result.threats : '—'), W - 54, y + 6.5);
+
+        // AI Score with colour coding
+        const aiScoreVal = typeof result.aiScore === 'number' ? result.aiScore : null;
+        if (aiScoreVal !== null) {
+            const scoreColor = aiScoreVal <= 30 ? [34,197,94] : aiScoreVal <= 70 ? [245,158,11] : [239,68,68];
+            doc.setTextColor(...scoreColor);
+            doc.setFont('helvetica','bold');
+            doc.text(aiScoreVal + '/100', W - 36, y + 6.5);
+            doc.setTextColor(...dark);
+            doc.setFont('helvetica','normal');
+        } else {
+            doc.text('—', W - 36, y + 6.5);
+        }
+
+        y += ROW_H;
+    });
+
+    drawPageFooter();
+    doc.save('WebGuard_BulkScan_Report_' + Date.now() + '.pdf');
+    console.log('[Bulk PDF] saved —', bulkScanResults.length, 'rows across', pageNum, 'page(s)');
 });
 
 document.getElementById('downloadTXT')?.addEventListener('click', function() {
@@ -3567,9 +3815,9 @@ document.getElementById('downloadTXT')?.addEventListener('click', function() {
 });
 
 document.getElementById('downloadCSV')?.addEventListener('click', function() {
-    let csv = 'No,URL,Status,SSL,Threats,Confidence\n';
+    let csv = 'No,URL,Status,SSL,Threats,Confidence,AI Score\n';
     bulkScanResults.forEach((r, i) => {
-        csv += `${i + 1},"${r.url}",${r.status},${r.ssl},${r.threats},${r.confidence}\n`;
+        csv += `${i + 1},"${r.url}",${r.status},${r.ssl},${r.threats},${r.confidence},${typeof r.aiScore === 'number' ? r.aiScore + '/100' : 'N/A'}\n`;
     });
     
     const blob = new Blob([csv], { type: 'text/csv' });
@@ -3616,8 +3864,23 @@ document.getElementById('downloadReportBtn')?.addEventListener('click', function
     let   issuer     = ssl?.issuer || ssl?.issuer_name || 'Not Available';
     if (typeof issuer === 'object') issuer = issuer.O || JSON.stringify(issuer);
     const sslMsg     = ssl?.message || ssl?.ssl_status || (hasSSL ? 'Valid SSL certificate' : 'No SSL certificate found');
-    const expiryDate = ssl?.valid_to || ssl?.not_after || ssl?.expires_on || 'Not Available';
-    const issueDate  = ssl?.valid_from || ssl?.not_before || ssl?.issued_on || 'Not Available';
+    // ── FIXED: parse dates the same way the UI does (updateTrustNavigatorDisplay) ──
+    function parseCertDate(raw) {
+        if (!raw) return 'Not Available';
+        try {
+            const d = new Date(raw);
+            return !isNaN(d.getTime())
+                ? d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+                : String(raw);
+        } catch (e) { return String(raw); }
+    }
+    const issueDateRaw  = ssl?.valid_from  || ssl?.not_before || ssl?.issued_on  || ssl?.issue_date  || ssl?.start_date || ssl?.notBefore  || null;
+    const expiryDateRaw = ssl?.valid_to    || ssl?.not_after  || ssl?.expires_on || ssl?.expiry_date || ssl?.end_date   || ssl?.notAfter   || null;
+    const issueDate     = parseCertDate(issueDateRaw);
+    const expiryDate    = parseCertDate(expiryDateRaw);
+    console.log('[PDF] issueDate raw →', issueDateRaw, '| formatted →', issueDate);
+    console.log('[PDF] expiryDate raw →', expiryDateRaw, '| formatted →', expiryDate);
+    // ── END FIX ──────────────────────────────────────────────────────────────
     const recText    = isSafe
         ? 'Website appears secure with valid SSL encryption and no known threats detected.'
         : riskLevel === 'RISKY'
@@ -3949,32 +4212,216 @@ if (localStorage.getItem('theme') === 'dark') {
 // ============================================
 updateStatistics();
 displayHistory();
-// ============================================
-// GLOBAL RISK METER CONTROLLER (SAFE PATCH)
-// ============================================
-function updateRiskMeter(level) {
-    const bar = document.getElementById("riskMeterBar");
-    if (!bar || !level) return;
+// ============================================================
+//  AI RISK SCORING ENGINE  — WebGuard AI  (non-breaking patch)
+//  Replaces static updateRiskMeter() with true dynamic scoring.
+//  UI (HTML/CSS) is NEVER touched — only width + text + class.
+// ============================================================
 
-    bar.classList.remove("risk-safe", "risk-warning", "risk-danger");
+/**
+ * computeRiskScore(params)
+ * ─────────────────────────
+ * Returns a score 0–100 built from real signal weights.
+ *
+ * @param {object} p
+ *   p.hasSSL        {boolean}  – SSL certificate valid?
+ *   p.ageInYears    {number}   – Domain age in years (0 = unknown)
+ *   p.vtPositives   {number}   – VirusTotal positive detections
+ *   p.vtTotal       {number}   – VirusTotal total engines (default 98)
+ *   p.mlConfidence  {number}   – ML confidence 0-100 (100 = certain SAFE)
+ *   p.mlLabel       {string}   – ML label ("safe"|"phishing"|"malware"|…)
+ *   p.url           {string}   – Raw URL string (structural analysis)
+ *   p.isTrusted     {boolean}  – Trusted-domain whitelist hit
+ *   p.emailScore    {number}   – Raw email threat score (email scans only)
+ *   p.scanType      {string}   – "url"|"qr"|"email"|"bulk"
+ */
+function computeRiskScore(p = {}) {
+    // ── Trusted domain fast-path ──────────────────────────────────────
+    if (p.isTrusted) return 0;
 
-    const l = level.toUpperCase();
+    let score = 0;
 
-    if (l.includes("SAFE") || l.includes("TRUSTED") || l.includes("LOW")) {
-        bar.style.width = "100%";
-        bar.textContent = "SAFE";
-        bar.classList.add("risk-safe");
+    // ── 1. SSL (0–30 pts) ─────────────────────────────────────────────
+    if (p.hasSSL === false) {
+        score += 30;
     }
-    else if (l.includes("SUSPICIOUS") || l.includes("MEDIUM")) {
-        bar.style.width = "65%";
-        bar.textContent = "SUSPICIOUS";
-        bar.classList.add("risk-warning");
+
+    // ── 2. Domain age (0–25 pts) ──────────────────────────────────────
+    const age = parseFloat(p.ageInYears) || 0;
+    if (age === 0)       score += 20;   // age unknown — moderate penalty
+    else if (age < 0.5)  score += 25;   // < 6 months — high risk
+    else if (age < 1)    score += 18;   // 6–12 months — medium risk
+    else if (age < 2)    score += 8;    // 1–2 years — slight caution
+    // ≥ 2 years → no penalty
+
+    // ── 3. VirusTotal (0–30 pts) ──────────────────────────────────────
+    const vtPos   = parseInt(p.vtPositives) || 0;
+    const vtTotal = parseInt(p.vtTotal)     || 98;
+    if (vtPos > 0) {
+        // Proportional: scales from 10 (1 engine) to 30 (≥5 engines)
+        const vtRatio = vtPos / vtTotal;
+        score += Math.min(30, Math.round(10 + vtRatio * 1000));
     }
-    else {
-        bar.style.width = "35%";
-        bar.textContent = "RISKY";
-        bar.classList.add("risk-danger");
+
+    // ── 4. ML prediction (0–20 pts) ───────────────────────────────────
+    const mlLabel = (p.mlLabel || '').toLowerCase();
+    const mlConf  = parseFloat(p.mlConfidence) || 0;
+    if (mlLabel.includes('phishing') || mlLabel.includes('malware') || mlLabel.includes('spam')) {
+        // ML says risky — weight by confidence
+        score += Math.round((mlConf / 100) * 20);
+    } else if (mlLabel.includes('safe') || mlLabel === '') {
+        // ML says safe — small bonus reduction (capped so other signals still matter)
+        score = Math.max(0, score - Math.round((mlConf / 100) * 5));
     }
+
+    // ── 5. URL structural analysis (0–25 pts) — URL/QR scans only ─────
+    if (p.url && (p.scanType === 'url' || p.scanType === 'qr' || !p.scanType)) {
+        const url = p.url.toLowerCase();
+
+        // Suspicious keywords (+20)
+        const suspiciousKeywords = [
+            'login', 'signin', 'verify', 'account', 'secure', 'update',
+            'confirm', 'banking', 'paypal', 'apple', 'google', 'microsoft',
+            'amazon', 'password', 'credential', 'wallet', 'alert', 'urgent',
+            'suspended', 'locked', 'unusual', 'limited', 'restore', 'recover'
+        ];
+        if (suspiciousKeywords.some(kw => url.includes(kw))) {
+            score += 20;
+        }
+
+        // Long URL (+15)
+        if (p.url.length > 75) score += 15;
+        else if (p.url.length > 50) score += 7;
+
+        // Special-character overload (+10)
+        const specialCount = (p.url.match(/[@\-_~%=&?#!$]/g) || []).length;
+        if (specialCount >= 6) score += 10;
+        else if (specialCount >= 3) score += 5;
+
+        // IP address instead of domain (+20 — classic phishing signal)
+        if (/https?:\/\/\d{1,3}(\.\d{1,3}){3}/.test(p.url)) score += 20;
+
+        // Excessive subdomains (e.g. paypal.secure.login.evil.com) (+15)
+        try {
+            const hostname = new URL(p.url.startsWith('http') ? p.url : 'https://' + p.url).hostname;
+            const parts = hostname.split('.');
+            if (parts.length > 4) score += 15;
+            else if (parts.length > 3) score += 7;
+        } catch (_) {}
+
+        // URL shortener service (+10 — destination unknown)
+        const shorteners = ['bit.ly','tinyurl.com','t.co','ow.ly','is.gd','goo.gl','short.io','rb.gy','cutt.ly'];
+        if (shorteners.some(s => p.url.includes(s))) score += 10;
+    }
+
+    // ── 6. Email-scan path (replaces URL structural analysis) ─────────
+    if (p.scanType === 'email' && typeof p.emailScore === 'number') {
+        // emailScore is already 0–100+; normalise to 0–70 contribution
+        score += Math.min(70, Math.round(p.emailScore * 0.7));
+    }
+
+    // ── Clamp 0–100 ───────────────────────────────────────────────────
+    return Math.min(100, Math.max(0, Math.round(score)));
+}
+
+/**
+ * scoreToMeterConfig(score)
+ * ─────────────────────────
+ * Maps a 0–100 score → { cssClass, width, label }
+ * Matches the existing CSS classes exactly (no new classes added).
+ */
+function scoreToMeterConfig(score) {
+    if (score <= 30) {
+        return { cssClass: 'risk-safe',    width: `${Math.max(30, 100 - score)}%`, label: `SAFE  (${score}/100)` };
+    } else if (score <= 70) {
+        return { cssClass: 'risk-warning', width: `${Math.round(35 + (70 - score) * 0.8)}%`, label: `WARNING  (${score}/100)` };
+    } else {
+        return { cssClass: 'risk-danger',  width: `${Math.max(10, Math.round(35 - (score - 70) * 0.3))}%`, label: `DANGER  (${score}/100)` };
+    }
+}
+
+/**
+ * applyMeterConfig(barId, config)
+ * ────────────────────────────────
+ * Writes ONLY width, textContent, and class onto the existing bar element.
+ * NEVER touches HTML structure or CSS variables.
+ */
+function applyMeterConfig(barId, config) {
+    const bar = document.getElementById(barId);
+    if (!bar) return;
+    bar.classList.remove('risk-safe', 'risk-warning', 'risk-danger');
+    bar.classList.add(config.cssClass);
+    // Smooth animated transition (CSS already has transition:all 0.6s ease)
+    bar.style.width   = config.width;
+    bar.textContent   = config.label;
+}
+
+/**
+ * updateRiskMeter(level, scoreOrParams)
+ * ──────────────────────────────────────
+ * Public API — BACKWARDS COMPATIBLE.
+ *
+ * Old callers that pass only a string level still work (fallback mode).
+ * New callers (displayResults, QR, Email, Bulk) pass a params object
+ * as the second argument to get true AI scoring.
+ *
+ * @param {string}        level         – Legacy string ("SAFE"|"SUSPICIOUS"|"RISKY"|…)
+ * @param {object|number} [scoreOrParams] – AI params object OR pre-computed score
+ */
+function updateRiskMeter(level, scoreOrParams) {
+    let score;
+
+    if (scoreOrParams && typeof scoreOrParams === 'object') {
+        // ✅ Full AI scoring path — called by enhanced displayResults / QR / Email
+        score = computeRiskScore(scoreOrParams);
+    } else if (typeof scoreOrParams === 'number') {
+        // ✅ Pre-computed score passed directly
+        score = Math.min(100, Math.max(0, scoreOrParams));
+    } else {
+        // ⬇️ Legacy fallback: derive rough score from level string
+        const l = (level || '').toUpperCase();
+        if (l.includes('TRUSTED') || l.includes('VERIFIED')) score = 0;
+        else if (l.includes('SAFE') || l.includes('LOW'))    score = 15;
+        else if (l.includes('SUSPICIOUS') || l.includes('MEDIUM')) score = 55;
+        else score = 80;   // RISKY / DANGER / HIGH / UNKNOWN
+    }
+
+    const config = scoreToMeterConfig(score);
+    applyMeterConfig('riskMeterBar', config);
+
+    // Also store for PDF/export usage
+    if (window.currentScanData) {
+        window.currentScanData._riskScore = score;
+    }
+
+    return score; // allow callers to log or use the score
+}
+
+/**
+ * updateQRRiskMeter(params)
+ * ──────────────────────────
+ * Same engine, targets the QR scanner's dedicated bar (#qrRiskMeterBar).
+ */
+function updateQRRiskMeter(params) {
+    const score  = computeRiskScore({ ...params, scanType: 'qr' });
+    const config = scoreToMeterConfig(score);
+    applyMeterConfig('qrRiskMeterBar', config);
+    return score;
+}
+
+/**
+ * updateEmailRiskMeter(emailThreatScore)
+ * ───────────────────────────────────────
+ * Drives the risk meter for the Email scanner results section.
+ * The email section doesn't have its own meter bar in the existing HTML,
+ * so this reuses the main URL scanner bar if it exists (safe no-op if not).
+ */
+function updateEmailRiskMeter(emailThreatScore) {
+    const score  = computeRiskScore({ scanType: 'email', emailScore: emailThreatScore });
+    const config = scoreToMeterConfig(score);
+    // Email results are in a different section — main bar is hidden, so this is safe
+    applyMeterConfig('riskMeterBar', config);
+    return score;
 }
 
 </script>
